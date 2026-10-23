@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="bn"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}body{margin:0;font-size:14px}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>HSC 90 Days</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+Da+2:wght@500;700&family=Hind+Siliguri:wght@400;500;600&display=swap">
+<style>
+/* Layout: one-column phone app — sticky day header, scrolling body, fixed bottom tab bar. Exercise-book ink + highlighter. */
+:root{
+  --paper:#f3f5f7; --sheet:#ffffff; --ink:#1d2a44; --muted:#5d6a80; --rule:#dde3ea;
+  --pen:#2a4fb5; --pen-soft:#e5ecfb; --marker:#f2b705; --marker-soft:#fff3c4;
+  --good:#1f8a5b; --good-soft:#dcf2e7; --late:#c2410c; --late-soft:#fde7dc;
+  --display:"Baloo Da 2","Hind Siliguri",system-ui,sans-serif;
+  --body:"Hind Siliguri",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#0f1522; --sheet:#172033; --ink:#e6ebf5; --muted:#9aa6bd; --rule:#2a3550;
+  --pen:#8fb0ff; --pen-soft:#22305a; --marker:#f5c542; --marker-soft:#3a3214;
+  --good:#4fd39a; --good-soft:#163a2b; --late:#ff9a6b; --late-soft:#3d2216; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0f1522; --sheet:#172033; --ink:#e6ebf5; --muted:#9aa6bd; --rule:#2a3550;
+  --pen:#8fb0ff; --pen-soft:#22305a; --marker:#f5c542; --marker-soft:#3a3214;
+  --good:#4fd39a; --good-soft:#163a2b; --late:#ff9a6b; --late-soft:#3d2216; color-scheme:dark}
+*{box-sizing:border-box}
+html,body{background:var(--paper);color:var(--ink)}
+body{font-family:var(--body);font-size:15px;line-height:1.5;padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--pen)}
+.wrap{max-width:560px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--pen);color:#fff}
+header.top .wrap{padding-block:14px 16px;display:flex;align-items:center;gap:14px}
+.daynum{font-family:var(--display);font-weight:700;font-size:40px;line-height:1;min-width:64px}
+.daynum small{display:block;font-size:12px;font-family:var(--body);font-weight:500;opacity:.8;letter-spacing:.04em}
+.hmeta{flex:1;min-width:0}
+.hmeta h1{font-family:var(--display);font-size:19px;margin:0;font-weight:700;text-wrap:balance}
+.hmeta p{margin:0;font-size:13px;opacity:.85}
+.ring{width:54px;height:54px;flex:none}
+.ring circle{fill:none;stroke-width:6}
+.ring text{fill:#fff;font-size:13px;font-weight:600;font-family:var(--body)}
+main .wrap{padding-block:16px;display:flex;flex-direction:column;gap:18px}
+h2{font-family:var(--display);font-size:18px;margin:0 0 8px;font-weight:700;display:flex;align-items:center;gap:8px}
+h2 .tag{font-family:var(--body);font-size:12px;font-weight:600;padding:1px 9px;border-radius:99px;background:var(--marker-soft);color:var(--ink)}
+.sheet{background:var(--sheet);border:1px solid var(--rule);border-radius:12px;overflow:hidden}
+.row{display:flex;align-items:center;gap:12px;padding:11px 14px;border-top:1px solid var(--rule)}
+.row:first-child{border-top:0}
+.row .grow{flex:1;min-width:0}
+.time{font-variant-numeric:tabular-nums;font-size:13px;color:var(--muted);min-width:88px}
+.check{appearance:none;width:24px;height:24px;border:2px solid var(--muted);border-radius:7px;flex:none;cursor:pointer;display:grid;place-content:center;background:transparent;margin:0}
+.check:checked{background:var(--good);border-color:var(--good)}
+.check:checked::after{content:"";width:10px;height:6px;border-left:2.5px solid #fff;border-bottom:2.5px solid #fff;transform:rotate(-45deg) translate(1px,-1px)}
+.check:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--marker);outline-offset:2px}
+.done .label{text-decoration:line-through;color:var(--muted)}
+.sub{font-size:12px;color:var(--muted)}
+.chip{font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px;white-space:nowrap}
+.chip.p1{background:var(--pen-soft);color:var(--pen)}
+.chip.p2{background:var(--marker-soft);color:var(--ink)}
+.chip.p3{background:var(--good-soft);color:var(--good)}
+.chip.late{background:var(--late-soft);color:var(--late)}
+.empty{padding:16px;color:var(--muted);font-size:14px}
+.bar{height:6px;border-radius:99px;background:var(--rule);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--pen);border-radius:99px}
+.phases{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.phase{padding:10px;border-radius:10px;background:var(--sheet);border:1px solid var(--rule);font-size:12px}
+.phase b{display:block;font-family:var(--display);font-size:15px}
+.phase.now{border-color:var(--pen);box-shadow:inset 0 0 0 1px var(--pen)}
+/* Checklist */
+details.subj{background:var(--sheet);border:1px solid var(--rule);border-radius:12px}
+details.subj+details.subj{margin-top:10px}
+details.subj summary{list-style:none;cursor:pointer;padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+details.subj summary::-webkit-details-marker{display:none}
+.sumtop{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.sumtop b{font-family:var(--display);font-size:16px}
+.chrow{display:flex;align-items:center;gap:8px;padding:8px 14px;border-top:1px solid var(--rule)}
+.chrow input.name{flex:1;min-width:0;border:0;background:transparent;color:var(--ink);font:inherit;font-size:14px;padding:4px 0}
+.tog{border:1.5px solid var(--rule);background:transparent;color:var(--muted);border-radius:8px;font:inherit;font-size:12px;font-weight:600;padding:3px 7px;cursor:pointer;min-width:42px}
+.tog.on{background:var(--good);border-color:var(--good);color:#fff}
+.x{border:0;background:transparent;color:var(--muted);font-size:18px;cursor:pointer;padding:0 4px;line-height:1}
+.addrow{display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--rule)}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+/* Forms */
+.field{display:flex;flex-direction:column;gap:4px;padding:12px 14px;border-top:1px solid var(--rule)}
+.field:first-child{border-top:0}
+.field label{font-size:13px;color:var(--muted);font-weight:500}
+input[type=text],input[type=date],input[type=number],input[type=time],select,textarea{font:inherit;color:var(--ink);background:var(--paper);border:1px solid var(--rule);border-radius:8px;padding:8px 10px;width:100%}
+textarea{min-height:90px;font-size:12px;font-family:ui-monospace,monospace}
+.btn{font:inherit;font-weight:600;border-radius:9px;padding:9px 14px;border:0;cursor:pointer;background:var(--pen);color:#fff;white-space:nowrap}
+.btn.ghost{background:var(--pen-soft);color:var(--pen)}
+.btn.warn{background:var(--late-soft);color:var(--late)}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+.rrow{display:grid;grid-template-columns:96px 1fr auto;gap:8px;align-items:center;padding:8px 14px;border-top:1px solid var(--rule)}
+.subjpick{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;padding:12px 14px}
+.subjpick label{display:flex;gap:8px;align-items:center;font-size:14px}
+.seg{display:inline-flex;border:1px solid var(--rule);border-radius:9px;overflow:hidden}
+.seg button{font:inherit;font-size:13px;padding:6px 12px;border:0;background:transparent;color:var(--ink);cursor:pointer}
+.seg button.on{background:var(--pen);color:#fff}
+/* Plan */
+.prow{display:grid;grid-template-columns:54px 1fr;gap:10px;padding:10px 14px;border-top:1px solid var(--rule)}
+.prow.today{background:var(--marker-soft)}
+.prow .d{font-family:var(--display);font-weight:700;font-size:18px;line-height:1.1}
+.prow .d span{display:block;font-family:var(--body);font-size:11px;font-weight:500;color:var(--muted)}
+.tasks{display:flex;flex-direction:column;gap:2px;font-size:14px;min-width:0}
+.tasks .ok{color:var(--good)}
+/* Nav */
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--sheet);border-top:1px solid var(--rule);padding-bottom:env(safe-area-inset-bottom,0px)}
+nav.tabs .wrap{display:grid;grid-template-columns:repeat(4,1fr)}
+nav.tabs button{font:inherit;font-size:12px;font-weight:600;background:none;border:0;color:var(--muted);padding:9px 0 10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px}
+nav.tabs button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+nav.tabs button.on{color:var(--pen)}
+.modal{position:fixed;inset:0;background:rgba(10,15,30,.5);z-index:20;display:grid;place-items:center;padding:16px}
+.modal .box{background:var(--sheet);border-radius:14px;padding:18px;max-width:360px;width:100%;display:flex;flex-direction:column;gap:12px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(86px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--paper);padding:8px 16px;border-radius:99px;font-size:13px;z-index:30}
+@media (prefers-reduced-motion:no-preference){.bar i{transition:width .3s}}
+</style>
+
+<header class="top"><div class="wrap">
+  <div class="daynum" id="hDay">1<small id="hOf">/ 90</small></div>
+  <div class="hmeta"><h1 id="hTitle"></h1><p id="hSub"></p></div>
+  <svg class="ring" viewBox="0 0 54 54" aria-hidden="true"><circle cx="27" cy="27" r="23" stroke="rgba(255,255,255,.25)"/><circle id="ringFg" cx="27" cy="27" r="23" stroke="#f5c542" stroke-linecap="round" transform="rotate(-90 27 27)" stroke-dasharray="144.5" stroke-dashoffset="144.5"/><text id="ringTx" x="27" y="31" text-anchor="middle">0%</text></svg>
+</div></header>
+
+<main><div class="wrap" id="view"></div></main>
+
+<nav class="tabs"><div class="wrap" id="tabs"></div></nav>
+<div class="modal" id="modal" hidden><div class="box"><div id="mText"></div><div class="btns"><button class="btn warn" id="mOk"></button><button class="btn ghost" id="mNo"></button></div></div></div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(function(){
+const KEY='hsc90-v1';
+const T={
+ bn:{today:'আজ',plan:'পরিকল্পনা',check:'চেকলিস্ট',settings:'সেটিংস',day:'দিন',of:'এর',left:'দিন বাকি',
+  p1:'সিলেবাস শেষ করা',p2:'রিভিশন',p3:'মডেল টেস্ট',p1s:'প্রতিটি অধ্যায় একবার পড়া',p2s:'সব অধ্যায় আবার ঝালাই',p3s:'পূর্ণ সময়ের পরীক্ষা',
+  routine:'আজকের রুটিন',studyToday:'আজকের পড়া',carry:'বাকি পড়ে আছে',noTasks:'আজ নির্ধারিত কোনো অধ্যায় নেই। বাকি কাজগুলো শেষ করো।',
+  mt:'মডেল টেস্ট',read:'পড়া',rev:'রিভিশন',mcq:'MCQ',addCh:'নতুন অধ্যায়',add:'যোগ',progress:'অগ্রগতি',streak:'টানা দিন',
+  name:'নাম',start:'শুরুর তারিখ',days:'মোট দিন',group:'বিভাগ',sci:'বিজ্ঞান',com:'ব্যবসায় শিক্ষা',hum:'মানবিক',subjects:'বিষয় বাছাই',
+  editRoutine:'রুটিন সম্পাদনা',addSlot:'নতুন সময় যোগ',lang:'ভাষা',backup:'ব্যাকআপ',copy:'কপি করো',restore:'রিস্টোর',reset:'সব মুছে নতুন শুরু',
+  backupHint:'কপি করে কোথাও রেখে দাও। পরে এখানে পেস্ট করে রিস্টোর করো।',sure:'নিশ্চিত?',yes:'হ্যাঁ',no:'না',
+  groupWarn:'বিভাগ বদলালে বিষয় ও অধ্যায়ের অগ্রগতি মুছে যাবে।',resetWarn:'সব অগ্রগতি মুছে যাবে।',copied:'কপি হয়েছে',restored:'রিস্টোর হয়েছে',bad:'ব্যাকআপ লেখা ঠিক নেই',
+  hello:'শুভকামনা',finished:'পরীক্ষার সময় এসে গেছে!',notStarted:'শুরু হবে',chapters:'অধ্যায়',
+  tip:'বিষয় বা অধ্যায় বদলালে পরিকল্পনা নিজে থেকেই নতুন করে সাজবে।',theme:'থিম',auto:'অটো',light:'লাইট',dark:'ডার্ক'},
+ en:{today:'Today',plan:'Plan',check:'Checklist',settings:'Settings',day:'Day',of:'of',left:'days left',
+  p1:'Finish syllabus',p2:'Revision',p3:'Model tests',p1s:'Read every chapter once',p2s:'Go over everything again',p3s:'Full-length timed tests',
+  routine:"Today's routine",studyToday:"Today's study",carry:'Carried over',noTasks:'Nothing new scheduled today. Clear the carried-over items.',
+  mt:'Model test',read:'Read',rev:'Rev',mcq:'MCQ',addCh:'New chapter',add:'Add',progress:'Progress',streak:'Streak',
+  name:'Name',start:'Start date',days:'Total days',group:'Group',sci:'Science',com:'Business',hum:'Humanities',subjects:'Subjects',
+  editRoutine:'Edit routine',addSlot:'Add time slot',lang:'Language',backup:'Backup',copy:'Copy',restore:'Restore',reset:'Erase everything',
+  backupHint:'Copy this text and keep it safe. Paste it here later to restore.',sure:'Are you sure?',yes:'Yes',no:'No',
+  groupWarn:'Changing group erases subject and chapter progress.',resetWarn:'All progress will be erased.',copied:'Copied',restored:'Restored',bad:'That backup text is not valid',
+  hello:'Good luck',finished:'Exam time is here!',notStarted:'Starts in',chapters:'chapters',
+  tip:'Edit subjects or chapters and the plan rebuilds itself.',theme:'Theme',auto:'Auto',light:'Light',dark:'Dark'}
+};
+const gen=n=>Array.from({length:n},(_,i)=>'অধ্যায় '+(i+1));
+const COMMON=[
+ ['বাংলা ১ম পত্র','Bangla 1st',['গদ্য','পদ্য','উপন্যাস: লালসালু','নাটক: সিরাজউদ্দৌলা','সৃজনশীল প্রশ্ন অনুশীলন']],
+ ['বাংলা ২য় পত্র','Bangla 2nd',['ধ্বনি ও উচ্চারণ','বানানের নিয়ম','শব্দ ও পদ','বাক্য ও বাক্যশুদ্ধি','পারিভাষিক শব্দ','অনুবাদ','পত্র ও আবেদন','সারাংশ ও ভাবসম্প্রসারণ','রচনা']],
+ ['ইংরেজি ১ম পত্র','English 1st',['Seen passages','Unseen comprehension','Cloze test','Flow chart & summary','Paragraph','Story writing','Email & letter','Graph & chart']],
+ ['ইংরেজি ২য় পত্র','English 2nd',['Articles & prepositions','Right form of verbs','Narration','Transformation','Modifiers','Sentence connectors','Tag questions','Application & letter','Report writing','Composition']],
+ ['আইসিটি','ICT',['তথ্য ও যোগাযোগ প্রযুক্তি: বিশ্ব ও বাংলাদেশ প্রেক্ষিত','কমিউনিকেশন সিস্টেম ও নেটওয়ার্কিং','সংখ্যা পদ্ধতি ও ডিজিটাল ডিভাইস','ওয়েব ডিজাইন ও HTML','প্রোগ্রামিং ভাষা','ডেটাবেজ ম্যানেজমেন্ট']]
+];
+const GROUPS={
+ sci:[
+  ['পদার্থবিজ্ঞান ১ম','Physics 1st',['ভৌতজগৎ ও পরিমাপ','ভেক্টর','গতিবিদ্যা','নিউটনিয়ান বলবিদ্যা','কাজ, শক্তি ও ক্ষমতা','মহাকর্ষ ও অভিকর্ষ','পদার্থের গাঠনিক ধর্ম','পর্যাবৃত্ত গতি','তরঙ্গ','আদর্শ গ্যাস ও গতিতত্ত্ব']],
+  ['পদার্থবিজ্ঞান ২য়','Physics 2nd',['তাপগতিবিদ্যা','স্থির তড়িৎ','চল তড়িৎ','তড়িৎ প্রবাহের চৌম্বক ক্রিয়া ও চুম্বকত্ব','তাড়িতচৌম্বক আবেশ ও পরিবর্তী প্রবাহ','জ্যামিতিক আলোকবিজ্ঞান','ভৌত আলোকবিজ্ঞান','আধুনিক পদার্থবিজ্ঞানের সূচনা','পরমাণুর মডেল ও নিউক্লিয়ার পদার্থবিজ্ঞান','সেমিকন্ডাক্টর ও ইলেকট্রনিক্স','জ্যোতির্বিজ্ঞান']],
+  ['রসায়ন ১ম','Chemistry 1st',['ল্যাবরেটরির নিরাপদ ব্যবহার','গুণগত রসায়ন','মৌলের পর্যায়বৃত্ত ধর্ম ও রাসায়নিক বন্ধন','রাসায়নিক পরিবর্তন','কর্মমুখী রসায়ন']],
+  ['রসায়ন ২য়','Chemistry 2nd',['পরিবেশ রসায়ন','জৈব রসায়ন','পরিমাণগত রসায়ন','তড়িৎ রসায়ন','অর্থনৈতিক রসায়ন']],
+  ['জীববিজ্ঞান ১ম','Biology 1st',['কোষ ও এর গঠন','কোষ বিভাজন','কোষ রসায়ন','অণুজীব','শৈবাল ও ছত্রাক','ব্রায়োফাইটা ও টেরিডোফাইটা','নগ্নবীজী ও আবৃতবীজী উদ্ভিদ','টিস্যু ও টিস্যুতন্ত্র','উদ্ভিদ শারীরতত্ত্ব','উদ্ভিদ প্রজনন','জীবপ্রযুক্তি','জীবের পরিবেশ, বিস্তার ও সংরক্ষণ']],
+  ['জীববিজ্ঞান ২য়','Biology 2nd',['প্রাণীর বিভিন্নতা ও শ্রেণিবিন্যাস','প্রাণীর পরিচিতি','পরিপাক ও শোষণ','রক্ত ও সঞ্চালন','শ্বসন ও শ্বাসক্রিয়া','বর্জ্য ও নিষ্কাশন','চলন ও অঙ্গচালনা','সমন্বয় ও নিয়ন্ত্রণ','মানবজীবনের ধারাবাহিকতা','মানবদেহের প্রতিরক্ষা','জিনতত্ত্ব ও বিবর্তন','প্রাণীর আচরণ']],
+  ['উচ্চতর গণিত ১ম','Higher Math 1st',['ম্যাট্রিক্স ও নির্ণায়ক','ভেক্টর','সরলরেখা','বৃত্ত','বিন্যাস ও সমাবেশ','ত্রিকোণমিতিক অনুপাত','সংযুক্ত কোণের ত্রিকোণমিতিক অনুপাত','ফাংশন ও লেখচিত্র','অন্তরীকরণ','যোগজীকরণ']],
+  ['উচ্চতর গণিত ২য়','Higher Math 2nd',['বাস্তব সংখ্যা ও অসমতা','যোগাশ্রয়ী প্রোগ্রাম','জটিল সংখ্যা','বহুপদী ও বহুপদী সমীকরণ','দ্বিপদী বিস্তৃতি','কণিক','বিপরীত ত্রিকোণমিতিক ফাংশন ও সমীকরণ','স্থিতিবিদ্যা','সমতলে বস্তুকণার গতি','বিস্তার পরিমাপ ও সম্ভাবনা']]
+ ],
+ com:[
+  ['হিসাববিজ্ঞান ১ম','Accounting 1st',gen(10)],['হিসাববিজ্ঞান ২য়','Accounting 2nd',gen(10)],
+  ['ব্যবসায় সংগঠন ও ব্যবস্থাপনা ১ম','Business Org 1st',gen(10)],['ব্যবসায় সংগঠন ও ব্যবস্থাপনা ২য়','Business Org 2nd',gen(10)],
+  ['ফিন্যান্স, ব্যাংকিং ও বিমা ১ম','Finance 1st',gen(10)],['ফিন্যান্স, ব্যাংকিং ও বিমা ২য়','Finance 2nd',gen(10)],
+  ['উৎপাদন ব্যবস্থাপনা ও বিপণন ১ম','Production & Marketing 1st',gen(10)],['উৎপাদন ব্যবস্থাপনা ও বিপণন ২য়','Production & Marketing 2nd',gen(10)]
+ ],
+ hum:[
+  ['অর্থনীতি ১ম','Economics 1st',gen(10)],['অর্থনীতি ২য়','Economics 2nd',gen(10)],
+  ['পৌরনীতি ও সুশাসন ১ম','Civics 1st',gen(10)],['পৌরনীতি ও সুশাসন ২য়','Civics 2nd',gen(10)],
+  ['ইতিহাস ১ম','History 1st',gen(10)],['ইতিহাস ২য়','History 2nd',gen(10)],
+  ['ভূগোল ১ম','Geography 1st',gen(10)],['ভূগোল ২য়','Geography 2nd',gen(10)]
+ ]
+};
+const ROUTINE=[['05:30','ঘুম থেকে ওঠা, হালকা ব্যায়াম'],['06:00','নতুন অধ্যায় পড়া (কঠিন বিষয়)'],['08:00','নাস্তা ও বিরতি'],['09:00','দ্বিতীয় বিষয়ের অধ্যায়'],['11:30','বাসার কাজ ও বিশ্রাম'],['14:30','MCQ অনুশীলন (৩০–৫০টি)'],['16:30','বিরতি ও হাঁটা'],['19:00','আজকের পড়া রিভিশন'],['21:00','একটি সৃজনশীল প্রশ্ন লিখে অনুশীলন'],['22:30','ঘুম (৭ ঘণ্টা)']];
+
+let uid=Date.now()%100000;const id=()=>'i'+(uid++).toString(36);
+function iso(d){const z=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate())}
+function parse(s){const[a,b,c]=s.split('-').map(Number);return new Date(a,b-1,c)}
+function addDays(s,n){const d=parse(s);d.setDate(d.getDate()+n);return iso(d)}
+function diff(a,b){return Math.round((parse(b)-parse(a))/864e5)}
+function buildSubjects(g){
+  const optional=g==='sci'?['Higher Math 1st','Higher Math 2nd']:g==='com'?['Production & Marketing 1st','Production & Marketing 2nd']:['Geography 1st','Geography 2nd'];
+  return COMMON.concat(GROUPS[g]).map(([bn,en,chs])=>({id:id(),bn,en,on:true,optional:optional.includes(en),chapters:chs.map(t=>({id:id(),t,read:false,rev:false,mcq:false}))}));
+}
+function fresh(){return{lang:'bn',theme:'auto',name:'',start:iso(new Date()),days:90,group:'sci',subjects:buildSubjects('sci'),routine:ROUTINE.map(([time,task])=>({id:id(),time,task})),log:{},mt:{},tab:'today'}}
+let S;
+try{S=JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){S=null}
+if(!S||!S.subjects)S=fresh();
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+const t=k=>T[S.lang][k]||k;
+const sn=s=>S.lang==='bn'?s.bn:s.en;
+const num=n=>S.lang==='bn'?String(n).replace(/\d/g,d=>'০১২৩৪৫৬৭৮৯'[d]):String(n);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---------- schedule ---------- */
+function plan(){
+  const D=Math.max(15,+S.days||90);
+  const p1=Math.round(D*.55),p2=Math.round(D*.28),p3=D-p1-p2;
+  const subs=S.subjects.filter(s=>s.on&&s.chapters.length);
+  // interleave subjects so each day mixes different subjects
+  const q=[];const max=Math.max(0,...subs.map(s=>s.chapters.length));
+  for(let i=0;i<max;i++)subs.forEach(s=>{if(s.chapters[i])q.push({s,c:s.chapters[i]})});
+  const days=Array.from({length:D},()=>[]);
+  q.forEach((x,i)=>{days[Math.floor(i*p1/q.length)].push({k:'read',...x})});
+  q.forEach((x,i)=>{days[p1+Math.floor(i*p2/q.length)].push({k:'rev',...x})});
+  for(let d=0;d<p3;d++){if(subs.length)days[p1+p2+d].push({k:'mt',s:subs[d%subs.length],day:p1+p2+d})}
+  return{D,p1,p2,p3,days,subs};
+}
+function phaseOf(i,P){return i<P.p1?1:i<P.p1+P.p2?2:3}
+function isDone(x){return x.k==='mt'?!!S.mt[x.day]:!!x.c[x.k]}
+function overall(P){let n=0,d=0;P.subs.forEach(s=>s.chapters.forEach(c=>{n+=3;d+=(c.read?1:0)+(c.rev?1:0)+(c.mcq?1:0)}));return n?d/n:0}
+function streak(){const n=S.routine.length;if(!n)return 0;let k=0,day=iso(new Date());
+  const ok=dd=>((S.log[dd]||[]).filter(x=>S.routine.some(r=>r.id===x)).length)>=Math.ceil(n/2);
+  if(!ok(day))day=addDays(day,-1);
+  while(ok(day)){k++;day=addDays(day,-1)}return k}
+
+/* ---------- UI helpers ---------- */
+const view=document.getElementById('view');
+function toast(m){const el=document.getElementById('toast');el.textContent=m;el.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>el.hidden=true,1800)}
+function ask(text,ok){const m=document.getElementById('modal');document.getElementById('mText').textContent=text+' '+t('sure');
+  const y=document.getElementById('mOk'),n=document.getElementById('mNo');y.textContent=t('yes');n.textContent=t('no');m.hidden=false;
+  y.onclick=()=>{m.hidden=true;ok()};n.onclick=()=>m.hidden=true}
+function applyTheme(){const r=document.documentElement;if(S.theme==='auto')r.removeAttribute('data-theme');else r.setAttribute('data-theme',S.theme)}
+const ICONS={today:'<circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/>',plan:'<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/>',check:'<path d="M9 6h11M9 12h11M9 18h11"/><path d="m3 6 1.5 1.5L7 5M3 12l1.5 1.5L7 11M3 18l1.5 1.5L7 17"/>',settings:'<circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.6-2-3.4-2.4 1a7 7 0 0 0-2-1.2L14 3h-4l-.5 2.6a7 7 0 0 0-2 1.2l-2.4-1-2 3.4 2 1.6A7 7 0 0 0 5 12c0 .4 0 .8.1 1.2l-2 1.6 2 3.4 2.4-1a7 7 0 0 0 2 1.2L10 21h4l.5-2.6a7 7 0 0 0 2-1.2l2.4 1 2-3.4-2-1.6c.1-.4.1-.8.1-1.2z"/>'};
+
+function header(P,idx){
+  const ph=phaseOf(Math.min(Math.max(idx,0),P.D-1),P);
+  const hd=document.getElementById('hDay'),of=document.getElementById('hOf');
+  if(idx<0){hd.firstChild.nodeValue=num(-idx);of.textContent=t('notStarted');document.getElementById('hTitle').textContent=t('p1');}
+  else if(idx>=P.D){hd.firstChild.nodeValue=num(P.D);of.textContent='/ '+num(P.D);document.getElementById('hTitle').textContent=t('finished');}
+  else{hd.firstChild.nodeValue=num(idx+1);of.textContent='/ '+num(P.D);document.getElementById('hTitle').textContent=t('p'+ph);}
+  const left=Math.max(0,P.D-Math.max(idx,0));
+  document.getElementById('hSub').textContent=(S.name?S.name+' · ':'')+num(left)+' '+t('left')+' · '+t('streak')+' '+num(streak());
+  const pct=overall(P);document.getElementById('ringFg').setAttribute('stroke-dashoffset',(144.5*(1-pct)).toFixed(1));
+  document.getElementById('ringTx').textContent=num(Math.round(pct*100))+'%';
+}
+
+/* ---------- views ---------- */
+function vToday(P,idx){
+  const today=iso(new Date());const log=S.log[today]||[];
+  const i=Math.min(Math.max(idx,0),P.D-1);const ph=phaseOf(i,P);
+  const phaseCards=[1,2,3].map(n=>{const len=[P.p1,P.p2,P.p3][n-1];return`<div class="phase ${n===ph?'now':''}"><b>${t('p'+n)}</b>${num(len)} ${t('day')}<div class="sub">${t('p'+n+'s')}</div></div>`}).join('');
+  const rDone=S.routine.filter(r=>log.includes(r.id)).length;
+  const routine=S.routine.map(r=>{const d=log.includes(r.id);return`<label class="row ${d?'done':''}"><input type="checkbox" class="check" data-r="${r.id}" ${d?'checked':''}><span class="time">${esc(r.time)}</span><span class="grow label">${esc(r.task)}</span></label>`}).join('');
+  const tasks=(idx>=0&&idx<P.D)?P.days[idx]:[];
+  const taskRow=(x,late)=>{const d=isDone(x);const what=x.k==='mt'?t('mt')+': '+sn(x.s):esc(x.c.t);const sub=x.k==='mt'?t('p3s'):sn(x.s)+' · '+t(x.k==='read'?'read':'rev');
+    return`<label class="row ${d?'done':''}"><input type="checkbox" class="check" data-k="${x.k}" data-c="${x.c?x.c.id:''}" data-day="${x.day??''}" ${d?'checked':''}><span class="grow"><span class="label">${what}</span><div class="sub">${sub}</div></span>${late?`<span class="chip late">${t('carry')}</span>`:`<span class="chip p${x.k==='read'?1:x.k==='rev'?2:3}">${t(x.k==='read'?'read':x.k==='rev'?'rev':'mt')}</span>`}</label>`};
+  let carry=[];
+  if(idx>0){for(let d=0;d<Math.min(idx,P.D);d++){if(phaseOf(d,P)!==ph)continue;P.days[d].forEach(x=>{if(!isDone(x))carry.push(x)})}}
+  const subjBars=P.subs.map(s=>{const n=s.chapters.length*3;const d=s.chapters.reduce((a,c)=>a+(c.read?1:0)+(c.rev?1:0)+(c.mcq?1:0),0);const p=n?Math.round(d/n*100):0;
+    return`<div class="row" style="display:block"><div class="sumtop" style="display:flex;justify-content:space-between;font-size:14px"><span>${sn(s)}</span><span class="sub">${num(p)}%</span></div><div class="bar"><i style="width:${p}%"></i></div></div>`}).join('');
+  view.innerHTML=`
+   <section><div class="phases">${phaseCards}</div></section>
+   <section><h2>${t('studyToday')}</h2><div class="sheet">${tasks.length?tasks.map(x=>taskRow(x,false)).join(''):`<div class="empty">${t('noTasks')}</div>`}</div></section>
+   ${carry.length?`<section><h2>${t('carry')} <span class="tag">${num(carry.length)}</span></h2><div class="sheet">${carry.slice(0,8).map(x=>taskRow(x,true)).join('')}</div></section>`:''}
+   <section><h2>${t('routine')} <span class="tag">${num(rDone)}/${num(S.routine.length)}</span></h2><div class="sheet">${routine}</div></section>
+   <section><h2>${t('progress')}</h2><div class="sheet">${subjBars}</div></section>`;
+  view.querySelectorAll('input[data-r]').forEach(el=>el.onchange=()=>{const l=S.log[today]||(S.log[today]=[]);const k=el.dataset.r;
+    if(el.checked){if(!l.includes(k))l.push(k)}else S.log[today]=l.filter(x=>x!==k);save();render()});
+  view.querySelectorAll('input[data-k]').forEach(el=>el.onchange=()=>{const k=el.dataset.k;
+    if(k==='mt'){S.mt[el.dataset.day]=el.checked}else{const c=findCh(el.dataset.c);if(c)c[k]=el.checked}save();render()});
+}
+function findCh(cid){for(const s of S.subjects)for(const c of s.chapters)if(c.id===cid)return c}
+function vPlan(P,idx){
+  const rows=P.days.map((ts,d)=>{const date=parse(addDays(S.start,d));const ph=phaseOf(d,P);
+    const dl=date.toLocaleDateString(S.lang==='bn'?'bn-BD':'en-GB',{day:'numeric',month:'short'});
+    const list=ts.map(x=>{const ok=isDone(x);const txt=x.k==='mt'?t('mt')+': '+sn(x.s):esc(x.c.t)+' <span class="sub">· '+sn(x.s)+'</span>';return`<div class="${ok?'ok':''}">${ok?'✓ ':''}${txt}</div>`}).join('')||`<div class="sub">—</div>`;
+    return`<div class="prow ${d===idx?'today':''}" ${d===idx?'id="todayRow"':''}><div class="d">${num(d+1)}<span>${dl}</span></div><div class="tasks"><div><span class="chip p${ph}">${t('p'+ph)}</span></div>${list}</div></div>`}).join('');
+  view.innerHTML=`<section><p class="sub" style="margin:0 0 10px">${t('tip')}</p><div class="sheet">${rows}</div></section>`;
+  const tr=document.getElementById('todayRow');if(tr)tr.scrollIntoView({block:'center'});
+}
+function vCheck(P){
+  const open=vCheck.open||(vCheck.open=new Set());
+  const html=S.subjects.filter(s=>s.on).map(s=>{const n=s.chapters.length;const r=s.chapters.filter(c=>c.read).length;const p=n?Math.round(s.chapters.reduce((a,c)=>a+(c.read?1:0)+(c.rev?1:0)+(c.mcq?1:0),0)/(n*3)*100):0;
+    const chs=s.chapters.map(c=>`<div class="chrow"><input class="name" id="n-${c.id}" data-c="${c.id}" value="${esc(c.t)}" aria-label="${t('chapters')}">${['read','rev','mcq'].map(k=>`<button class="tog ${c[k]?'on':''}" data-c="${c.id}" data-k="${k}">${t(k)}</button>`).join('')}<button class="x" data-del="${c.id}" data-s="${s.id}" aria-label="delete">×</button></div>`).join('');
+    return`<details class="subj" data-s="${s.id}" ${open.has(s.id)?'open':''}><summary><div class="sumtop"><b>${sn(s)}</b><span class="sub">${num(r)}/${num(n)} ${t('chapters')} · ${num(p)}%</span></div><div class="bar"><i style="width:${p}%"></i></div></summary>${chs}<div class="addrow"><input type="text" id="add-${s.id}" placeholder="${t('addCh')}"><button class="btn ghost" data-add="${s.id}">${t('add')}</button></div></details>`}).join('');
+  view.innerHTML=`<section><div class="legend" style="margin-bottom:10px"><span>${t('read')} = ${t('p1s')}</span><span>${t('rev')} = ${t('p2')}</span><span>MCQ ✓</span></div>${html}</section>`;
+  view.querySelectorAll('details.subj').forEach(d=>d.ontoggle=()=>{d.open?open.add(d.dataset.s):open.delete(d.dataset.s)});
+  view.querySelectorAll('.tog').forEach(b=>b.onclick=()=>{const c=findCh(b.dataset.c);c[b.dataset.k]=!c[b.dataset.k];save();render()});
+  view.querySelectorAll('input.name').forEach(i=>i.onchange=()=>{const c=findCh(i.dataset.c);c.t=i.value.trim()||c.t;save()});
+  view.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{const s=S.subjects.find(x=>x.id===b.dataset.s);const c=findCh(b.dataset.del);
+    ask('"'+c.t+'"',()=>{s.chapters=s.chapters.filter(x=>x.id!==c.id);save();render()})});
+  view.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>{const inp=document.getElementById('add-'+b.dataset.add);const v=inp.value.trim();if(!v)return;
+    S.subjects.find(x=>x.id===b.dataset.add).chapters.push({id:id(),t:v,read:false,rev:false,mcq:false});save();render()});
+}
+function vSettings(){
+  const subjs=S.subjects.map(s=>`<label><input type="checkbox" class="check" data-on="${s.id}" ${s.on?'checked':''}>${sn(s)}</label>`).join('');
+  const rr=S.routine.map(r=>`<div class="rrow"><input type="time" id="rt-${r.id}" data-rt="${r.id}" value="${esc(r.time)}"><input type="text" id="rx-${r.id}" data-rx="${r.id}" value="${esc(r.task)}"><button class="x" data-rdel="${r.id}" aria-label="delete">×</button></div>`).join('');
+  const seg=(key,opts)=>`<div class="seg">${opts.map(([v,l])=>`<button data-${key}="${v}" class="${S[key]===v?'on':''}">${l}</button>`).join('')}</div>`;
+  view.innerHTML=`
+  <section><div class="sheet">
+    <div class="field"><label>${t('lang')}</label>${seg('lang',[['bn','বাংলা'],['en','English']])}</div>
+    <div class="field"><label>${t('theme')}</label>${seg('theme',[['auto',t('auto')],['light',t('light')],['dark',t('dark')]])}</div>
+    <div class="field"><label for="sName">${t('name')}</label><input type="text" id="sName" value="${esc(S.name)}"></div>
+    <div class="field"><label for="sStart">${t('start')}</label><input type="date" id="sStart" value="${S.start}"></div>
+    <div class="field"><label for="sDays">${t('days')}</label><input type="number" id="sDays" min="15" max="365" value="${S.days}"></div>
+    <div class="field"><label for="sGroup">${t('group')}</label><select id="sGroup">${['sci','com','hum'].map(g=>`<option value="${g}" ${S.group===g?'selected':''}>${t(g)}</option>`).join('')}</select></div>
+  </div></section>
+  <section><h2>${t('subjects')}</h2><div class="sheet"><div class="subjpick">${subjs}</div></div></section>
+  <section><h2>${t('editRoutine')}</h2><div class="sheet">${rr}<div class="addrow"><button class="btn ghost" id="rAdd">${t('addSlot')}</button></div></div></section>
+  <section><h2>${t('backup')}</h2><div class="sheet"><div class="field"><label for="bk">${t('backupHint')}</label><textarea id="bk"></textarea><div class="btns"><button class="btn ghost" id="bCopy">${t('copy')}</button><button class="btn" id="bRestore">${t('restore')}</button></div></div></div></section>
+  <section><button class="btn warn" id="reset">${t('reset')}</button></section>`;
+  document.getElementById('bk').value=JSON.stringify(S);
+  view.querySelectorAll('[data-lang]').forEach(b=>b.onclick=()=>{S.lang=b.dataset.lang;save();render()});
+  view.querySelectorAll('[data-theme]').forEach(b=>b.onclick=()=>{S.theme=b.dataset.theme;save();applyTheme();render()});
+  sName.onchange=()=>{S.name=sName.value.trim();save();render()};
+  sStart.onchange=()=>{if(sStart.value){S.start=sStart.value;save();render()}};
+  sDays.onchange=()=>{S.days=Math.min(365,Math.max(15,+sDays.value||90));save();render()};
+  sGroup.onchange=()=>{const g=sGroup.value;ask(t('groupWarn'),()=>{S.group=g;S.subjects=buildSubjects(g);S.mt={};save();render()});sGroup.value=S.group};
+  view.querySelectorAll('[data-on]').forEach(c=>c.onchange=()=>{S.subjects.find(s=>s.id===c.dataset.on).on=c.checked;save();render()});
+  view.querySelectorAll('[data-rt]').forEach(i=>i.onchange=()=>{const r=S.routine.find(x=>x.id===i.dataset.rt);r.time=i.value;S.routine.sort((a,b)=>a.time.localeCompare(b.time));save();render()});
+  view.querySelectorAll('[data-rx]').forEach(i=>i.onchange=()=>{S.routine.find(x=>x.id===i.dataset.rx).task=i.value;save()});
+  view.querySelectorAll('[data-rdel]').forEach(b=>b.onclick=()=>{S.routine=S.routine.filter(x=>x.id!==b.dataset.rdel);save();render()});
+  rAdd.onclick=()=>{S.routine.push({id:id(),time:'12:00',task:'…'});S.routine.sort((a,b)=>a.time.localeCompare(b.time));save();render()};
+  bCopy.onclick=()=>{const ta=document.getElementById('bk');const done=()=>toast(t('copied'));
+    try{navigator.clipboard.writeText(ta.value).then(done,()=>{ta.select();document.execCommand('copy');done()})}catch(e){ta.select();document.execCommand('copy');done()}};
+  bRestore.onclick=()=>{try{const v=JSON.parse(document.getElementById('bk').value);if(!v.subjects||!v.routine)throw 0;S=v;save();applyTheme();toast(t('restored'));render()}catch(e){toast(t('bad'))}};
+  reset.onclick=()=>ask(t('resetWarn'),()=>{const l=S.lang;S=fresh();S.lang=l;save();applyTheme();render()});
+}
+
+function render(){
+  document.documentElement.lang=S.lang;
+  const P=plan();const idx=diff(S.start,iso(new Date()));
+  header(P,idx);
+  document.getElementById('tabs').innerHTML=['today','plan','check','settings'].map(k=>`<button data-tab="${k}" class="${S.tab===k?'on':''}"><svg viewBox="0 0 24 24">${ICONS[k]}</svg>${t(k)}</button>`).join('');
+  document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{S.tab=b.dataset.tab;save();render();window.scrollTo(0,0)});
+  ({today:vToday,plan:vPlan,check:vCheck,settings:vSettings}[S.tab]||vToday)(P,idx);
+}
+applyTheme();render();
+// refresh at midnight / when app comes back to the foreground
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)render()});
+})();
+</script>
+
+</html>
