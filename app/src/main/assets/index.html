@@ -111,6 +111,14 @@ nav.tabs button.on{color:var(--pen)}
 .modal{position:fixed;inset:0;background:rgba(10,15,30,.5);z-index:20;display:grid;place-items:center;padding:16px}
 .modal .box{background:var(--sheet);border-radius:14px;padding:18px;max-width:360px;width:100%;display:flex;flex-direction:column;gap:12px}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(86px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--paper);padding:8px 16px;border-radius:99px;font-size:13px;z-index:30}
+.hint{margin:-4px 0 8px;font-size:13px;color:var(--muted)}
+.note{background:var(--marker-soft);border-radius:12px;padding:12px 14px;font-size:14px}
+.note ul{margin:6px 0 0;padding-left:18px}
+.bar-row{display:block}.bar-top{display:flex;justify-content:space-between;font-size:14px;margin-bottom:4px}
+.phase-h{margin:18px 0 8px;font-size:15px}.phase-h:first-child{margin-top:0}
+details.subj.cur{border-color:var(--pen);box-shadow:inset 0 0 0 1px var(--pen)}
+.chrow .done .label{text-decoration:line-through;color:var(--muted)}
+.addrow select{width:auto;max-width:40%}
 @media (prefers-reduced-motion:no-preference){.bar i{transition:width .3s}}
 </style>
 
@@ -128,103 +136,96 @@ nav.tabs button.on{color:var(--pen)}
 
 <script>
 (function(){
-const KEY='hsc90-v1';
+const KEY='hsc90-v2', OLD='hsc90-v1';
 const T={
- bn:{today:'আজ',plan:'পরিকল্পনা',check:'চেকলিস্ট',settings:'সেটিংস',day:'দিন',of:'এর',left:'দিন বাকি',
-  p1:'সিলেবাস শেষ করা',p2:'রিভিশন',p3:'মডেল টেস্ট',p1s:'প্রতিটি অধ্যায় একবার পড়া',p2s:'সব অধ্যায় আবার ঝালাই',p3s:'পূর্ণ সময়ের পরীক্ষা',
-  routine:'আজকের রুটিন',studyToday:'আজকের পড়া',carry:'বাকি পড়ে আছে',noTasks:'আজ নির্ধারিত কোনো অধ্যায় নেই। বাকি কাজগুলো শেষ করো।',
-  mt:'মডেল টেস্ট',read:'পড়া',rev:'রিভিশন',mcq:'MCQ',addCh:'নতুন অধ্যায়',add:'যোগ',progress:'অগ্রগতি',streak:'টানা দিন',
-  name:'নাম',start:'শুরুর তারিখ',days:'মোট দিন',group:'বিভাগ',sci:'বিজ্ঞান',com:'ব্যবসায় শিক্ষা',hum:'মানবিক',subjects:'বিষয় বাছাই',
-  editRoutine:'রুটিন সম্পাদনা',addSlot:'নতুন সময় যোগ',lang:'ভাষা',backup:'ব্যাকআপ',copy:'কপি করো',restore:'রিস্টোর',reset:'সব মুছে নতুন শুরু',
+ bn:{today:'আজ',plan:'সাপ্তাহিক',check:'চেকলিস্ট',settings:'সেটিংস',week:'সপ্তাহ',day:'দিন',left:'দিন বাকি',
+  p1:'কঠিন অধ্যায় আগে',p2:'বাকি অধ্যায়',p3:'বোর্ড প্রশ্ন ও মডেল টেস্ট',p1s:'সপ্তাহ ১–৬',p2s:'সপ্তাহ ৭–১০',p3s:'সপ্তাহ ১১–১৪',
+  routine:'আজকের রুটিন',focus:'আজকের ফোকাস',focusHint:'এই সপ্তাহের বাকি টপিক থেকে আজকের ভাগ। কঠিনগুলো আগে।',
+  thisWeek:'এই সপ্তাহের সব টপিক',carry:'আগের সপ্তাহের বাকি',allDone:'এই সপ্তাহের সব টপিক শেষ! আগের বাকি থাকলে সেগুলো ধরো।',
+  read:'পড়া',rev:'রিভিশন',progress:'বিষয়ভিত্তিক অগ্রগতি',streak:'টানা দিন',hard:'কঠিন',added:'যোগ করা',
+  name:'নাম',start:'শুরুর তারিখ',end:'পরীক্ষার আগের শেষ দিন',editRoutine:'রুটিন সম্পাদনা',addSlot:'নতুন সময় যোগ',
+  addTopic:'নতুন টপিক',add:'যোগ',lang:'ভাষা',backup:'ব্যাকআপ',copy:'কপি করো',restore:'রিস্টোর',reset:'সব মুছে নতুন শুরু',
   backupHint:'কপি করে কোথাও রেখে দাও। পরে এখানে পেস্ট করে রিস্টোর করো।',sure:'নিশ্চিত?',yes:'হ্যাঁ',no:'না',
-  groupWarn:'বিভাগ বদলালে বিষয় ও অধ্যায়ের অগ্রগতি মুছে যাবে।',resetWarn:'সব অগ্রগতি মুছে যাবে।',copied:'কপি হয়েছে',restored:'রিস্টোর হয়েছে',bad:'ব্যাকআপ লেখা ঠিক নেই',
-  hello:'শুভকামনা',finished:'পরীক্ষার সময় এসে গেছে!',notStarted:'শুরু হবে',chapters:'অধ্যায়',
-  tip:'বিষয় বা অধ্যায় বদলালে পরিকল্পনা নিজে থেকেই নতুন করে সাজবে।',theme:'থিম',auto:'অটো',light:'লাইট',dark:'ডার্ক'},
- en:{today:'Today',plan:'Plan',check:'Checklist',settings:'Settings',day:'Day',of:'of',left:'days left',
-  p1:'Finish syllabus',p2:'Revision',p3:'Model tests',p1s:'Read every chapter once',p2s:'Go over everything again',p3s:'Full-length timed tests',
-  routine:"Today's routine",studyToday:"Today's study",carry:'Carried over',noTasks:'Nothing new scheduled today. Clear the carried-over items.',
-  mt:'Model test',read:'Read',rev:'Rev',mcq:'MCQ',addCh:'New chapter',add:'Add',progress:'Progress',streak:'Streak',
-  name:'Name',start:'Start date',days:'Total days',group:'Group',sci:'Science',com:'Business',hum:'Humanities',subjects:'Subjects',
-  editRoutine:'Edit routine',addSlot:'Add time slot',lang:'Language',backup:'Backup',copy:'Copy',restore:'Restore',reset:'Erase everything',
+  resetWarn:'সব অগ্রগতি মুছে যাবে।',copied:'কপি হয়েছে',restored:'রিস্টোর হয়েছে',bad:'ব্যাকআপ লেখা ঠিক নেই',
+  finished:'পরীক্ষার সময় এসে গেছে!',notStarted:'দিন পর শুরু',tip:'পরামর্শ',guide:'পরীক্ষার হলের গাইডলাইন',
+  theme:'থিম',auto:'অটো',light:'লাইট',dark:'ডার্ক',topics:'টপিক',del:'মুছুন'},
+ en:{today:'Today',plan:'Weekly',check:'Checklist',settings:'Settings',week:'Week',day:'Day',left:'days left',
+  p1:'Hard chapters first',p2:'Remaining chapters',p3:'Board questions & model tests',p1s:'Weeks 1–6',p2s:'Weeks 7–10',p3s:'Weeks 11–14',
+  routine:"Today's routine",focus:"Today's focus",focusHint:"Today's share of this week's pending topics. Hard ones first.",
+  thisWeek:"All topics this week",carry:'Left over from earlier weeks',allDone:'Every topic this week is done! Clear any leftovers.',
+  read:'Read',rev:'Revised',progress:'Progress by subject',streak:'Streak',hard:'Hard',added:'Added',
+  name:'Name',start:'Start date',end:'Last day before exam',editRoutine:'Edit routine',addSlot:'Add time slot',
+  addTopic:'New topic',add:'Add',lang:'Language',backup:'Backup',copy:'Copy',restore:'Restore',reset:'Erase everything',
   backupHint:'Copy this text and keep it safe. Paste it here later to restore.',sure:'Are you sure?',yes:'Yes',no:'No',
-  groupWarn:'Changing group erases subject and chapter progress.',resetWarn:'All progress will be erased.',copied:'Copied',restored:'Restored',bad:'That backup text is not valid',
-  hello:'Good luck',finished:'Exam time is here!',notStarted:'Starts in',chapters:'chapters',
-  tip:'Edit subjects or chapters and the plan rebuilds itself.',theme:'Theme',auto:'Auto',light:'Light',dark:'Dark'}
+  resetWarn:'All progress will be erased.',copied:'Copied',restored:'Restored',bad:'That backup text is not valid',
+  finished:'Exam time is here!',notStarted:'days to start',tip:'Tip',guide:'Exam hall guidelines',
+  theme:'Theme',auto:'Auto',light:'Light',dark:'Dark',topics:'topics',del:'Delete'}
 };
-const gen=n=>Array.from({length:n},(_,i)=>'অধ্যায় '+(i+1));
-const COMMON=[
- ['বাংলা ১ম পত্র','Bangla 1st',['গদ্য','পদ্য','উপন্যাস: লালসালু','নাটক: সিরাজউদ্দৌলা','সৃজনশীল প্রশ্ন অনুশীলন']],
- ['বাংলা ২য় পত্র','Bangla 2nd',['ধ্বনি ও উচ্চারণ','বানানের নিয়ম','শব্দ ও পদ','বাক্য ও বাক্যশুদ্ধি','পারিভাষিক শব্দ','অনুবাদ','পত্র ও আবেদন','সারাংশ ও ভাবসম্প্রসারণ','রচনা']],
- ['ইংরেজি ১ম পত্র','English 1st',['Seen passages','Unseen comprehension','Cloze test','Flow chart & summary','Paragraph','Story writing','Email & letter','Graph & chart']],
- ['ইংরেজি ২য় পত্র','English 2nd',['Articles & prepositions','Right form of verbs','Narration','Transformation','Modifiers','Sentence connectors','Tag questions','Application & letter','Report writing','Composition']],
- ['আইসিটি','ICT',['তথ্য ও যোগাযোগ প্রযুক্তি: বিশ্ব ও বাংলাদেশ প্রেক্ষিত','কমিউনিকেশন সিস্টেম ও নেটওয়ার্কিং','সংখ্যা পদ্ধতি ও ডিজিটাল ডিভাইস','ওয়েব ডিজাইন ও HTML','প্রোগ্রামিং ভাষা','ডেটাবেজ ম্যানেজমেন্ট']]
+const SUBJ={phy1:['পদার্থ ১ম','Physics 1st'],phy2:['পদার্থ ২য়','Physics 2nd'],chem1:['রসায়ন ১ম','Chemistry 1st'],chem2:['রসায়ন ২য়','Chemistry 2nd'],
+ hm1:['উচ্চতর গণিত ১ম','Higher Math 1st'],hm2:['উচ্চতর গণিত ২য়','Higher Math 2nd'],bio1:['জীববিজ্ঞান ১ম','Biology 1st'],bio2:['জীববিজ্ঞান ২য়','Biology 2nd'],
+ ict:['আইসিটি','ICT'],ban1:['বাংলা ১ম','Bangla 1st'],ban2:['বাংলা ২য়','Bangla 2nd'],eng1:['ইংরেজি ১ম','English 1st'],eng2:['ইংরেজি ২য়','English 2nd'],
+ all:['সব বিষয়','All subjects']};
+// Topic-wise plan from the "HSC Science Master Routine & Syllabus Tracker". [subject, topic, hard?, addedByApp?]
+const PLAN=[
+ [['chem2','জৈব রসায়ন (১ম অংশ: নামকরণ, সমাণুতা)',1],['phy1','নিউটনিয়ান বলবিদ্যা',1],['hm1','অন্তরীকরণ (Differentiation)',1],['bio1','কোষ ও এর গঠন, কোষ রসায়ন'],['ban1','অপরিচিতা, আমার পথ'],['eng1','People or Institutions, Modifier']],
+ [['chem2','জৈব রসায়ন (২য় অংশ: বিক্রিয়া ও ডেরিভেটিভস)',1],['phy1','কাজ, শক্তি ও ক্ষমতা, ভেক্টর'],['hm1','যোগজীকরণ (Integration)',1],['bio2','জিনতত্ত্ব ও বিবর্তন',1],['ban1','বায়ান্নর দিনগুলো, রেইনকোট'],['eng1','Dreams, Right form of verbs']],
+ [['phy2','স্থির তড়িৎ ও চল তড়িৎ',1],['chem1','রাসায়নিক পরিবর্তন (Kp, Kc, pH)',1],['hm2','কণিক (পরাবৃত্ত, উপবৃত্ত, অধিবৃত্ত)',1],['ict','সংখ্যা পদ্ধতি ও লজিক গেট',1],['ban1','বিভীষণের প্রতি মেঘনাদ, সোনার তরী'],['eng1','Human Rights, Narration']],
+ [['phy2','তড়িৎ প্রবাহের চৌম্বক ক্রিয়া ও আবেশ',1],['chem2','পরিমাণগত রসায়ন (মোল ও টাইট্রেশন)',1],['hm2','স্থিতিবিদ্যা ও সমতলে বস্তুকণার গতি',1],['bio1','উদ্ভিদ শারীরতত্ত্ব (C3, C4)',1],['ban1','বিদ্রোহী, প্রতিদান, সুচেতনা'],['eng1','Education, Completing Sentence']],
+ [['phy2','জ্যামিতিক ও ভৌত আলোকবিজ্ঞান',1],['chem1','গুণগত রসায়ন (দ্রাব্যতা ও দ্রাব্যতা গুণফল)'],['hm1','ত্রিকোণমিতিক অনুপাত (৭.১–৭.৭)'],['bio2','রক্ত ও সংবহন, পরিপাক ও শোষণ'],['ban2','বাংলা উচ্চারণের নিয়ম, বানান'],['eng2','Preposition, Connectors']],
+ [['phy2','তাপগতিবিদ্যা ও আধুনিক পদার্থবিজ্ঞান'],['chem2','তড়িৎ রসায়ন ও পরিবেশ রসায়ন'],['hm2','বহুপদী ও বহুপদী সমীকরণ, জটিল সংখ্যা'],['ict','সি প্রোগ্রামিং (C Programming)',1],['ban2','ব্যাকরণিক শব্দশ্রেণি, সমাস'],['eng2','Vocabulary, Synonym-Antonym']],
+ [['phy1','মহাকর্ষ ও অভিকর্ষ, পর্যাবৃত্ত গতি'],['chem1','মৌলের পর্যায়বৃত্ত ধর্ম ও রাসায়নিক বন্ধন'],['hm1','সরলরেখা ও বৃত্ত'],['bio1','অণুজীব, কোষ বিভাজন'],['ban1','তাহারেই পড়ে মনে, পদ্মা'],['eng1','Youth Culture, Rearrange']],
+ [['phy1','পদার্থের গাঠনিক ধর্ম, আদর্শ গ্যাস ও গতিতত্ত্ব'],['chem1','ল্যাবরেটরির নিরাপদ ব্যবহার'],['chem2','অর্থনৈতিক রসায়ন'],['hm1','ম্যাট্রিক্স ও নির্ণায়ক, ভেক্টর'],['bio2','শ্বসন ও রেচন, চলন ও অঙ্গচালনা'],['ban1','উপন্যাস: লালসালু'],['ban2','বাক্য রূপান্তর'],['eng2','Paragraph & Formal Letters']],
+ [['phy1','ভৌতজগৎ ও পরিমাপ, তরঙ্গ'],['phy2','সেমিকন্ডাক্টর ও ইলেকট্রনিক্স'],['chem1','কর্মমুখী রসায়ন'],['hm2','বাস্তব সংখ্যা, বিপরীত ত্রিকোণমিতি, সম্ভাবনা'],['bio1','নগ্নবীজী উদ্ভিদ, উদ্ভিদ প্রজনন'],['bio2','স্নায়ুতন্ত্র (সমন্বয় ও নিয়ন্ত্রণ)'],['ban1','নাটক: সিরাজউদ্দৌলা'],['ban2','বাক্য সংশোধন'],['eng2','Report Writing & Composition']],
+ [['ict','HTML, ডেটাবেজ, ওয়েব ডিজাইন'],['all','বিজ্ঞান ব্যাকলগ: কঠিন অধ্যায়গুলোর সূত্র রিভিশন'],['bio1','টিস্যু ও টিস্যুতন্ত্র, জীবপ্রযুক্তি'],['bio2','প্রাণীর শ্রেণিবিন্যাস'],['all','গণিত ব্যাকলগ: বোর্ড প্রশ্ন প্র্যাকটিস'],['ban2','ভাবসম্প্রসারণ, আবেদনপত্র'],
+  ['phy1','গতিবিদ্যা',0,1],['bio1','শৈবাল ও ছত্রাক, ব্রায়োফাইটা ও টেরিডোফাইটা',0,1],['bio2','প্রাণীর পরিচিতি (হাইড্রা, ঘাসফড়িং, রুই)',0,1],['bio2','মানবদেহের প্রতিরক্ষা, প্রাণীর আচরণ',0,1]],
+ [['all','বিগত ৫ বছরের বোর্ড প্রশ্ন (CQ) পুঙ্খানুপুঙ্খ সমাধান'],['all','সপ্তাহ ১–৬ এর কঠিন অধ্যায়গুলোর টাইপভিত্তিক রিভিশন']],
+ [['all','শীর্ষ কলেজগুলোর টেস্ট পেপার থেকে MCQ ও CQ প্র্যাকটিস'],['all','রসায়ন ও জীববিজ্ঞানের মূল বইয়ের তথ্যমূলক লাইন রিভিশন']],
+ [['all','ঘড়ি ধরে বাসায় ফুল পেপার মডেল টেস্ট'],['all','সময় বণ্টন ও লেখার গতি যাচাই']],
+ [['all','ফাইনাল রিভিশন: শুধু ফর্মুলা নোট ও নিজের শর্টকাট'],['all','বাংলা ও ইংরেজি লেখার ফরম্যাটগুলো চোখ বুলিয়ে নেওয়া']]
 ];
-const GROUPS={
- sci:[
-  ['পদার্থবিজ্ঞান ১ম','Physics 1st',['ভৌতজগৎ ও পরিমাপ','ভেক্টর','গতিবিদ্যা','নিউটনিয়ান বলবিদ্যা','কাজ, শক্তি ও ক্ষমতা','মহাকর্ষ ও অভিকর্ষ','পদার্থের গাঠনিক ধর্ম','পর্যাবৃত্ত গতি','তরঙ্গ','আদর্শ গ্যাস ও গতিতত্ত্ব']],
-  ['পদার্থবিজ্ঞান ২য়','Physics 2nd',['তাপগতিবিদ্যা','স্থির তড়িৎ','চল তড়িৎ','তড়িৎ প্রবাহের চৌম্বক ক্রিয়া ও চুম্বকত্ব','তাড়িতচৌম্বক আবেশ ও পরিবর্তী প্রবাহ','জ্যামিতিক আলোকবিজ্ঞান','ভৌত আলোকবিজ্ঞান','আধুনিক পদার্থবিজ্ঞানের সূচনা','পরমাণুর মডেল ও নিউক্লিয়ার পদার্থবিজ্ঞান','সেমিকন্ডাক্টর ও ইলেকট্রনিক্স','জ্যোতির্বিজ্ঞান']],
-  ['রসায়ন ১ম','Chemistry 1st',['ল্যাবরেটরির নিরাপদ ব্যবহার','গুণগত রসায়ন','মৌলের পর্যায়বৃত্ত ধর্ম ও রাসায়নিক বন্ধন','রাসায়নিক পরিবর্তন','কর্মমুখী রসায়ন']],
-  ['রসায়ন ২য়','Chemistry 2nd',['পরিবেশ রসায়ন','জৈব রসায়ন','পরিমাণগত রসায়ন','তড়িৎ রসায়ন','অর্থনৈতিক রসায়ন']],
-  ['জীববিজ্ঞান ১ম','Biology 1st',['কোষ ও এর গঠন','কোষ বিভাজন','কোষ রসায়ন','অণুজীব','শৈবাল ও ছত্রাক','ব্রায়োফাইটা ও টেরিডোফাইটা','নগ্নবীজী ও আবৃতবীজী উদ্ভিদ','টিস্যু ও টিস্যুতন্ত্র','উদ্ভিদ শারীরতত্ত্ব','উদ্ভিদ প্রজনন','জীবপ্রযুক্তি','জীবের পরিবেশ, বিস্তার ও সংরক্ষণ']],
-  ['জীববিজ্ঞান ২য়','Biology 2nd',['প্রাণীর বিভিন্নতা ও শ্রেণিবিন্যাস','প্রাণীর পরিচিতি','পরিপাক ও শোষণ','রক্ত ও সঞ্চালন','শ্বসন ও শ্বাসক্রিয়া','বর্জ্য ও নিষ্কাশন','চলন ও অঙ্গচালনা','সমন্বয় ও নিয়ন্ত্রণ','মানবজীবনের ধারাবাহিকতা','মানবদেহের প্রতিরক্ষা','জিনতত্ত্ব ও বিবর্তন','প্রাণীর আচরণ']],
-  ['উচ্চতর গণিত ১ম','Higher Math 1st',['ম্যাট্রিক্স ও নির্ণায়ক','ভেক্টর','সরলরেখা','বৃত্ত','বিন্যাস ও সমাবেশ','ত্রিকোণমিতিক অনুপাত','সংযুক্ত কোণের ত্রিকোণমিতিক অনুপাত','ফাংশন ও লেখচিত্র','অন্তরীকরণ','যোগজীকরণ']],
-  ['উচ্চতর গণিত ২য়','Higher Math 2nd',['বাস্তব সংখ্যা ও অসমতা','যোগাশ্রয়ী প্রোগ্রাম','জটিল সংখ্যা','বহুপদী ও বহুপদী সমীকরণ','দ্বিপদী বিস্তৃতি','কণিক','বিপরীত ত্রিকোণমিতিক ফাংশন ও সমীকরণ','স্থিতিবিদ্যা','সমতলে বস্তুকণার গতি','বিস্তার পরিমাপ ও সম্ভাবনা']]
- ],
- com:[
-  ['হিসাববিজ্ঞান ১ম','Accounting 1st',gen(10)],['হিসাববিজ্ঞান ২য়','Accounting 2nd',gen(10)],
-  ['ব্যবসায় সংগঠন ও ব্যবস্থাপনা ১ম','Business Org 1st',gen(10)],['ব্যবসায় সংগঠন ও ব্যবস্থাপনা ২য়','Business Org 2nd',gen(10)],
-  ['ফিন্যান্স, ব্যাংকিং ও বিমা ১ম','Finance 1st',gen(10)],['ফিন্যান্স, ব্যাংকিং ও বিমা ২য়','Finance 2nd',gen(10)],
-  ['উৎপাদন ব্যবস্থাপনা ও বিপণন ১ম','Production & Marketing 1st',gen(10)],['উৎপাদন ব্যবস্থাপনা ও বিপণন ২য়','Production & Marketing 2nd',gen(10)]
- ],
- hum:[
-  ['অর্থনীতি ১ম','Economics 1st',gen(10)],['অর্থনীতি ২য়','Economics 2nd',gen(10)],
-  ['পৌরনীতি ও সুশাসন ১ম','Civics 1st',gen(10)],['পৌরনীতি ও সুশাসন ২য়','Civics 2nd',gen(10)],
-  ['ইতিহাস ১ম','History 1st',gen(10)],['ইতিহাস ২য়','History 2nd',gen(10)],
-  ['ভূগোল ১ম','Geography 1st',gen(10)],['ভূগোল ২য়','Geography 2nd',gen(10)]
- ]
-};
-const ROUTINE=[['05:30','ঘুম থেকে ওঠা, হালকা ব্যায়াম'],['06:00','নতুন অধ্যায় পড়া (কঠিন বিষয়)'],['08:00','নাস্তা ও বিরতি'],['09:00','দ্বিতীয় বিষয়ের অধ্যায়'],['11:30','বাসার কাজ ও বিশ্রাম'],['14:30','MCQ অনুশীলন (৩০–৫০টি)'],['16:30','বিরতি ও হাঁটা'],['19:00','আজকের পড়া রিভিশন'],['21:00','একটি সৃজনশীল প্রশ্ন লিখে অনুশীলন'],['22:30','ঘুম (৭ ঘণ্টা)']];
+const TIPS={11:'পদার্থবিজ্ঞান ও উচ্চতর গণিতে বারবার আসা টাইপগুলোর শর্টকাট নোট মিলিয়ে নাও।',12:'MCQ-তে পূর্ণ নম্বরের জন্য মূল বইয়ের দাগানো অংশগুলো বারবার পড়ো।',13:'পরীক্ষার মতো ৩ ঘণ্টার লিখিত ও ২৫ মিনিটের MCQ দিয়ে মানসিক প্রস্তুতি নাও।',14:'পর্যাপ্ত ঘুম, হালকা পুষ্টিকর খাবার আর শান্ত মন রাখা এখন সবচেয়ে জরুরি।'};
+const GUIDE=['সৃজনশীলে গাণিতিক অংশগুলো আগে করো, পদার্থ ও গণিতে এতে সময় বাঁচে।','রসায়ন ও জীববিজ্ঞানে চিত্র আর সমীকরণ পরিষ্কার করে দিলে বেশি নম্বর আসে।'];
+const ROUTINE=[['05:30','ঘুম থেকে ওঠা, হালকা ব্যায়াম'],['06:00','আজকের কঠিন টপিক (নতুন পড়া)'],['08:00','নাস্তা ও বিরতি'],['09:00','দ্বিতীয় টপিক'],['11:30','বাসার কাজ ও বিশ্রাম'],['14:30','MCQ অনুশীলন (৩০–৫০টি)'],['16:30','বিরতি ও হাঁটা'],['19:00','বাংলা/ইংরেজি টপিক'],['21:00','আজকের পড়া রিভিশন ও একটি CQ লেখা'],['22:30','ঘুম (৭ ঘণ্টা)']];
 
 let uid=Date.now()%100000;const id=()=>'i'+(uid++).toString(36);
-function iso(d){const z=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate())}
+const z=n=>String(n).padStart(2,'0');
+function iso(d){return d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate())}
 function parse(s){const[a,b,c]=s.split('-').map(Number);return new Date(a,b-1,c)}
 function addDays(s,n){const d=parse(s);d.setDate(d.getDate()+n);return iso(d)}
 function diff(a,b){return Math.round((parse(b)-parse(a))/864e5)}
-function buildSubjects(g){
-  const optional=g==='sci'?['Higher Math 1st','Higher Math 2nd']:g==='com'?['Production & Marketing 1st','Production & Marketing 2nd']:['Geography 1st','Geography 2nd'];
-  return COMMON.concat(GROUPS[g]).map(([bn,en,chs])=>({id:id(),bn,en,on:true,optional:optional.includes(en),chapters:chs.map(t=>({id:id(),t,read:false,rev:false,mcq:false}))}));
-}
-function fresh(){return{lang:'bn',theme:'auto',name:'',start:iso(new Date()),days:90,group:'sci',subjects:buildSubjects('sci'),routine:ROUTINE.map(([time,task])=>({id:id(),time,task})),log:{},mt:{},tab:'today'}}
-let S;
-try{S=JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){S=null}
-if(!S||!S.subjects)S=fresh();
+function buildWeeks(){return PLAN.map(w=>w.map(([s,t,h,a])=>({id:id(),s,t,hard:!!h,added:!!a,read:false,rev:false})))}
+function fresh(){return{lang:'bn',theme:'auto',name:'',start:'2026-10-23',end:'2027-01-30',weeks:buildWeeks(),
+  routine:ROUTINE.map(([time,task])=>({id:id(),time,task})),log:{},tab:'today'}}
+let S=null;
+try{S=JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){}
+if(!S||!S.weeks){const f=fresh();
+  try{const o=JSON.parse(localStorage.getItem(OLD)||'null');if(o){['lang','theme','name','routine','log'].forEach(k=>{if(o[k]!=null)f[k]=o[k]})}}catch(e){}
+  S=f;}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 const t=k=>T[S.lang][k]||k;
-const sn=s=>S.lang==='bn'?s.bn:s.en;
+const sn=k=>(SUBJ[k]||[k,k])[S.lang==='bn'?0:1];
 const num=n=>S.lang==='bn'?String(n).replace(/\d/g,d=>'০১২৩৪৫৬৭৮৯'[d]):String(n);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmt=s=>parse(s).toLocaleDateString(S.lang==='bn'?'bn-BD':'en-GB',{day:'numeric',month:'short'});
 
-/* ---------- schedule ---------- */
-function plan(){
-  const D=Math.max(15,+S.days||90);
-  const p1=Math.round(D*.55),p2=Math.round(D*.28),p3=D-p1-p2;
-  const subs=S.subjects.filter(s=>s.on&&s.chapters.length);
-  // interleave subjects so each day mixes different subjects
-  const q=[];const max=Math.max(0,...subs.map(s=>s.chapters.length));
-  for(let i=0;i<max;i++)subs.forEach(s=>{if(s.chapters[i])q.push({s,c:s.chapters[i]})});
-  const days=Array.from({length:D},()=>[]);
-  q.forEach((x,i)=>{days[Math.floor(i*p1/q.length)].push({k:'read',...x})});
-  q.forEach((x,i)=>{days[p1+Math.floor(i*p2/q.length)].push({k:'rev',...x})});
-  for(let d=0;d<p3;d++){if(subs.length)days[p1+p2+d].push({k:'mt',s:subs[d%subs.length],day:p1+p2+d})}
-  return{D,p1,p2,p3,days,subs};
+/* ---------- calendar ---------- */
+function cal(){
+  const total=Math.max(diff(S.start,S.end)+1,7*S.weeks.length);
+  const N=S.weeks.length;
+  // weeks are 7 days each; the last week stretches to the end date
+  const ws=S.weeks.map((_,i)=>{const a=addDays(S.start,i*7);const b=i===N-1?S.end:addDays(S.start,i*7+6);return{a,b}});
+  const today=iso(new Date());const di=diff(S.start,today);
+  let wi=-1;if(di>=0){wi=Math.min(Math.floor(di/7),N-1);if(diff(today,ws[N-1].b)<0)wi=N;}
+  return{total,ws,di,wi,today};
 }
-function phaseOf(i,P){return i<P.p1?1:i<P.p1+P.p2?2:3}
-function isDone(x){return x.k==='mt'?!!S.mt[x.day]:!!x.c[x.k]}
-function overall(P){let n=0,d=0;P.subs.forEach(s=>s.chapters.forEach(c=>{n+=3;d+=(c.read?1:0)+(c.rev?1:0)+(c.mcq?1:0)}));return n?d/n:0}
+const phaseOfWeek=i=>i<6?1:i<10?2:3;
+function allTopics(){return S.weeks.flat()}
+function subjProgress(){const m={};allTopics().forEach(x=>{if(x.s==='all')return;(m[x.s]=m[x.s]||{n:0,d:0});m[x.s].n+=2;m[x.s].d+=(x.read?1:0)+(x.rev?1:0)});return m}
+function overall(){let n=0,d=0;allTopics().forEach(x=>{n+=2;d+=(x.read?1:0)+(x.rev?1:0)});return n?d/n:0}
+function findT(tid){for(const w of S.weeks)for(const x of w)if(x.id===tid)return x}
 function streak(){const n=S.routine.length;if(!n)return 0;let k=0,day=iso(new Date());
   const ok=dd=>((S.log[dd]||[]).filter(x=>S.routine.some(r=>r.id===x)).length)>=Math.ceil(n/2);
-  if(!ok(day))day=addDays(day,-1);
-  while(ok(day)){k++;day=addDays(day,-1)}return k}
+  if(!ok(day))day=addDays(day,-1);while(ok(day)){k++;day=addDays(day,-1)}return k}
 
 /* ---------- UI helpers ---------- */
 const view=document.getElementById('view');
@@ -234,112 +235,117 @@ function ask(text,ok){const m=document.getElementById('modal');document.getEleme
   y.onclick=()=>{m.hidden=true;ok()};n.onclick=()=>m.hidden=true}
 function applyTheme(){const r=document.documentElement;if(S.theme==='auto')r.removeAttribute('data-theme');else r.setAttribute('data-theme',S.theme)}
 const ICONS={today:'<circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/>',plan:'<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/>',check:'<path d="M9 6h11M9 12h11M9 18h11"/><path d="m3 6 1.5 1.5L7 5M3 12l1.5 1.5L7 11M3 18l1.5 1.5L7 17"/>',settings:'<circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.6-2-3.4-2.4 1a7 7 0 0 0-2-1.2L14 3h-4l-.5 2.6a7 7 0 0 0-2 1.2l-2.4-1-2 3.4 2 1.6A7 7 0 0 0 5 12c0 .4 0 .8.1 1.2l-2 1.6 2 3.4 2.4-1a7 7 0 0 0 2 1.2L10 21h4l.5-2.6a7 7 0 0 0 2-1.2l2.4 1 2-3.4-2-1.6c.1-.4.1-.8.1-1.2z"/>'};
+function topicRow(x,opt={}){
+  const chips=(x.hard?`<span class="chip late">${t('hard')}</span>`:'')+(opt.carry?`<span class="chip p2">${t('week')} ${num(opt.carry)}</span>`:'');
+  return`<label class="row ${x.read?'done':''}"><input type="checkbox" class="check" data-t="${x.id}" ${x.read?'checked':''}><span class="grow"><span class="label">${esc(x.t)}</span><div class="sub">${sn(x.s)}</div></span>${chips}</label>`}
+function bindTopicChecks(){view.querySelectorAll('input[data-t]').forEach(el=>el.onchange=()=>{findT(el.dataset.t).read=el.checked;save();render()})}
 
-function header(P,idx){
-  const ph=phaseOf(Math.min(Math.max(idx,0),P.D-1),P);
-  const hd=document.getElementById('hDay'),of=document.getElementById('hOf');
-  if(idx<0){hd.firstChild.nodeValue=num(-idx);of.textContent=t('notStarted');document.getElementById('hTitle').textContent=t('p1');}
-  else if(idx>=P.D){hd.firstChild.nodeValue=num(P.D);of.textContent='/ '+num(P.D);document.getElementById('hTitle').textContent=t('finished');}
-  else{hd.firstChild.nodeValue=num(idx+1);of.textContent='/ '+num(P.D);document.getElementById('hTitle').textContent=t('p'+ph);}
-  const left=Math.max(0,P.D-Math.max(idx,0));
-  document.getElementById('hSub').textContent=(S.name?S.name+' · ':'')+num(left)+' '+t('left')+' · '+t('streak')+' '+num(streak());
-  const pct=overall(P);document.getElementById('ringFg').setAttribute('stroke-dashoffset',(144.5*(1-pct)).toFixed(1));
+function header(C){
+  const hd=document.getElementById('hDay'),of=document.getElementById('hOf'),ti=document.getElementById('hTitle');
+  if(C.wi<0){hd.firstChild.nodeValue=num(-C.di);of.textContent=t('notStarted');ti.textContent=t('p1');}
+  else if(C.wi>=S.weeks.length){hd.firstChild.nodeValue='✓';of.textContent='';ti.textContent=t('finished');}
+  else{hd.firstChild.nodeValue=num(C.wi+1);of.textContent=t('week')+' / '+num(S.weeks.length);ti.textContent=t('p'+phaseOfWeek(C.wi));}
+  const left=Math.max(0,diff(C.today,S.end)+1);
+  document.getElementById('hSub').textContent=(S.name?S.name+' · ':'')+num(Math.min(left,C.total))+' '+t('left')+' · '+t('streak')+' '+num(streak());
+  const pct=overall();document.getElementById('ringFg').setAttribute('stroke-dashoffset',(144.5*(1-pct)).toFixed(1));
   document.getElementById('ringTx').textContent=num(Math.round(pct*100))+'%';
 }
 
 /* ---------- views ---------- */
-function vToday(P,idx){
-  const today=iso(new Date());const log=S.log[today]||[];
-  const i=Math.min(Math.max(idx,0),P.D-1);const ph=phaseOf(i,P);
-  const phaseCards=[1,2,3].map(n=>{const len=[P.p1,P.p2,P.p3][n-1];return`<div class="phase ${n===ph?'now':''}"><b>${t('p'+n)}</b>${num(len)} ${t('day')}<div class="sub">${t('p'+n+'s')}</div></div>`}).join('');
+function vToday(C){
+  const log=S.log[C.today]||[];
+  const wi=Math.min(Math.max(C.wi,0),S.weeks.length-1);const ph=phaseOfWeek(wi);
+  const phaseCards=[1,2,3].map(n=>`<div class="phase ${n===ph?'now':''}"><b>${t('p'+n)}</b><div class="sub">${t('p'+n+'s')}</div></div>`).join('');
+  const week=S.weeks[wi]||[];const pending=week.filter(x=>!x.read).sort((a,b)=>b.hard-a.hard);
+  const daysLeft=C.wi>=0&&C.wi<S.weeks.length?Math.max(1,diff(C.today,C.ws[wi].b)+1):1;
+  const focus=pending.slice(0,Math.ceil(pending.length/daysLeft));
+  const carry=[];if(C.wi>0){for(let i=0;i<Math.min(C.wi,S.weeks.length);i++)S.weeks[i].forEach(x=>{if(!x.read)carry.push([x,i+1])})}
   const rDone=S.routine.filter(r=>log.includes(r.id)).length;
   const routine=S.routine.map(r=>{const d=log.includes(r.id);return`<label class="row ${d?'done':''}"><input type="checkbox" class="check" data-r="${r.id}" ${d?'checked':''}><span class="time">${esc(r.time)}</span><span class="grow label">${esc(r.task)}</span></label>`}).join('');
-  const tasks=(idx>=0&&idx<P.D)?P.days[idx]:[];
-  const taskRow=(x,late)=>{const d=isDone(x);const what=x.k==='mt'?t('mt')+': '+sn(x.s):esc(x.c.t);const sub=x.k==='mt'?t('p3s'):sn(x.s)+' · '+t(x.k==='read'?'read':'rev');
-    return`<label class="row ${d?'done':''}"><input type="checkbox" class="check" data-k="${x.k}" data-c="${x.c?x.c.id:''}" data-day="${x.day??''}" ${d?'checked':''}><span class="grow"><span class="label">${what}</span><div class="sub">${sub}</div></span>${late?`<span class="chip late">${t('carry')}</span>`:`<span class="chip p${x.k==='read'?1:x.k==='rev'?2:3}">${t(x.k==='read'?'read':x.k==='rev'?'rev':'mt')}</span>`}</label>`};
-  let carry=[];
-  if(idx>0){for(let d=0;d<Math.min(idx,P.D);d++){if(phaseOf(d,P)!==ph)continue;P.days[d].forEach(x=>{if(!isDone(x))carry.push(x)})}}
-  const subjBars=P.subs.map(s=>{const n=s.chapters.length*3;const d=s.chapters.reduce((a,c)=>a+(c.read?1:0)+(c.rev?1:0)+(c.mcq?1:0),0);const p=n?Math.round(d/n*100):0;
-    return`<div class="row" style="display:block"><div class="sumtop" style="display:flex;justify-content:space-between;font-size:14px"><span>${sn(s)}</span><span class="sub">${num(p)}%</span></div><div class="bar"><i style="width:${p}%"></i></div></div>`}).join('');
+  const sp=subjProgress();
+  const bars=Object.keys(SUBJ).filter(k=>sp[k]).map(k=>{const p=Math.round(sp[k].d/sp[k].n*100);return`<div class="row bar-row"><div class="bar-top"><span>${sn(k)}</span><span class="sub">${num(p)}%</span></div><div class="bar"><i style="width:${p}%"></i></div></div>`}).join('');
+  const wDone=week.filter(x=>x.read).length;
   view.innerHTML=`
    <section><div class="phases">${phaseCards}</div></section>
-   <section><h2>${t('studyToday')}</h2><div class="sheet">${tasks.length?tasks.map(x=>taskRow(x,false)).join(''):`<div class="empty">${t('noTasks')}</div>`}</div></section>
-   ${carry.length?`<section><h2>${t('carry')} <span class="tag">${num(carry.length)}</span></h2><div class="sheet">${carry.slice(0,8).map(x=>taskRow(x,true)).join('')}</div></section>`:''}
+   ${C.wi>=0&&C.wi<S.weeks.length?`<section><h2>${t('focus')}</h2><p class="hint">${t('focusHint')}</p><div class="sheet">${focus.length?focus.map(x=>topicRow(x)).join(''):`<div class="empty">${t('allDone')}</div>`}</div></section>`:''}
+   ${TIPS[wi+1]?`<section class="note"><b>${t('tip')}:</b> ${TIPS[wi+1]}</section>`:''}
+   ${carry.length?`<section><h2>${t('carry')} <span class="tag">${num(carry.length)}</span></h2><div class="sheet">${carry.slice(0,10).map(([x,w])=>topicRow(x,{carry:w})).join('')}</div></section>`:''}
    <section><h2>${t('routine')} <span class="tag">${num(rDone)}/${num(S.routine.length)}</span></h2><div class="sheet">${routine}</div></section>
-   <section><h2>${t('progress')}</h2><div class="sheet">${subjBars}</div></section>`;
-  view.querySelectorAll('input[data-r]').forEach(el=>el.onchange=()=>{const l=S.log[today]||(S.log[today]=[]);const k=el.dataset.r;
-    if(el.checked){if(!l.includes(k))l.push(k)}else S.log[today]=l.filter(x=>x!==k);save();render()});
-  view.querySelectorAll('input[data-k]').forEach(el=>el.onchange=()=>{const k=el.dataset.k;
-    if(k==='mt'){S.mt[el.dataset.day]=el.checked}else{const c=findCh(el.dataset.c);if(c)c[k]=el.checked}save();render()});
+   <section><h2>${t('thisWeek')} <span class="tag">${num(wDone)}/${num(week.length)}</span></h2><div class="sheet">${week.map(x=>topicRow(x)).join('')}</div></section>
+   <section><h2>${t('progress')}</h2><div class="sheet">${bars}</div></section>`;
+  view.querySelectorAll('input[data-r]').forEach(el=>el.onchange=()=>{const l=S.log[C.today]||(S.log[C.today]=[]);const k=el.dataset.r;
+    if(el.checked){if(!l.includes(k))l.push(k)}else S.log[C.today]=l.filter(x=>x!==k);save();render()});
+  bindTopicChecks();
 }
-function findCh(cid){for(const s of S.subjects)for(const c of s.chapters)if(c.id===cid)return c}
-function vPlan(P,idx){
-  const rows=P.days.map((ts,d)=>{const date=parse(addDays(S.start,d));const ph=phaseOf(d,P);
-    const dl=date.toLocaleDateString(S.lang==='bn'?'bn-BD':'en-GB',{day:'numeric',month:'short'});
-    const list=ts.map(x=>{const ok=isDone(x);const txt=x.k==='mt'?t('mt')+': '+sn(x.s):esc(x.c.t)+' <span class="sub">· '+sn(x.s)+'</span>';return`<div class="${ok?'ok':''}">${ok?'✓ ':''}${txt}</div>`}).join('')||`<div class="sub">—</div>`;
-    return`<div class="prow ${d===idx?'today':''}" ${d===idx?'id="todayRow"':''}><div class="d">${num(d+1)}<span>${dl}</span></div><div class="tasks"><div><span class="chip p${ph}">${t('p'+ph)}</span></div>${list}</div></div>`}).join('');
-  view.innerHTML=`<section><p class="sub" style="margin:0 0 10px">${t('tip')}</p><div class="sheet">${rows}</div></section>`;
-  const tr=document.getElementById('todayRow');if(tr)tr.scrollIntoView({block:'center'});
+function vPlan(C){
+  const open=vPlan.open||(vPlan.open=new Set([Math.max(0,Math.min(C.wi,S.weeks.length-1))]));
+  const opts=Object.keys(SUBJ).map(k=>`<option value="${k}">${sn(k)}</option>`).join('');
+  let html='',lastPh=0;
+  S.weeks.forEach((w,i)=>{const ph=phaseOfWeek(i);
+    if(ph!==lastPh){html+=`<h2 class="phase-h"><span class="chip p${ph}">${t('p'+ph)}</span><span class="sub">${t('p'+ph+'s')}</span></h2>`;lastPh=ph}
+    const d=w.filter(x=>x.read).length;const cur=i===C.wi;
+    html+=`<details class="subj ${cur?'cur':''}" data-w="${i}" ${open.has(i)?'open':''}><summary><div class="sumtop"><b>${t('week')} ${num(i+1)}${cur?' · '+t('today'):''}</b><span class="sub">${fmt(C.ws[i].a)} – ${fmt(C.ws[i].b)} · ${num(d)}/${num(w.length)}</span></div><div class="bar"><i style="width:${w.length?d/w.length*100:0}%"></i></div></summary>
+      ${w.map(x=>`<div class="chrow"><input type="checkbox" class="check" data-t="${x.id}" ${x.read?'checked':''} aria-label="${t('read')}"><span class="grow ${x.read?'done':''}"><span class="label">${esc(x.t)}</span><div class="sub">${sn(x.s)}${x.hard?' · '+t('hard'):''}${x.added?' · '+t('added'):''}</div></span><button class="x" data-del="${x.id}" data-w="${i}" aria-label="${t('del')}">×</button></div>`).join('')}
+      <div class="addrow"><select id="as-${i}" aria-label="subject">${opts}</select><input type="text" id="at-${i}" placeholder="${t('addTopic')}"><button class="btn ghost" data-add="${i}">${t('add')}</button></div></details>`});
+  html+=`<section class="note"><b>${t('guide')}</b><ul>${GUIDE.map(g=>`<li>${g}</li>`).join('')}</ul></section>`;
+  view.innerHTML=`<section>${html}</section>`;
+  view.querySelectorAll('details.subj').forEach(d=>d.ontoggle=()=>{const i=+d.dataset.w;d.open?open.add(i):open.delete(i)});
+  bindTopicChecks();
+  view.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{const w=S.weeks[+b.dataset.w];const x=findT(b.dataset.del);
+    ask('"'+x.t+'"',()=>{S.weeks[+b.dataset.w]=w.filter(y=>y.id!==x.id);save();render()})});
+  view.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>{const i=+b.dataset.add;const v=document.getElementById('at-'+i).value.trim();if(!v)return;
+    S.weeks[i].push({id:id(),s:document.getElementById('as-'+i).value,t:v,hard:false,added:true,read:false,rev:false});save();render()});
 }
-function vCheck(P){
+function vCheck(){
   const open=vCheck.open||(vCheck.open=new Set());
-  const html=S.subjects.filter(s=>s.on).map(s=>{const n=s.chapters.length;const r=s.chapters.filter(c=>c.read).length;const p=n?Math.round(s.chapters.reduce((a,c)=>a+(c.read?1:0)+(c.rev?1:0)+(c.mcq?1:0),0)/(n*3)*100):0;
-    const chs=s.chapters.map(c=>`<div class="chrow"><input class="name" id="n-${c.id}" data-c="${c.id}" value="${esc(c.t)}" aria-label="${t('chapters')}">${['read','rev','mcq'].map(k=>`<button class="tog ${c[k]?'on':''}" data-c="${c.id}" data-k="${k}">${t(k)}</button>`).join('')}<button class="x" data-del="${c.id}" data-s="${s.id}" aria-label="delete">×</button></div>`).join('');
-    return`<details class="subj" data-s="${s.id}" ${open.has(s.id)?'open':''}><summary><div class="sumtop"><b>${sn(s)}</b><span class="sub">${num(r)}/${num(n)} ${t('chapters')} · ${num(p)}%</span></div><div class="bar"><i style="width:${p}%"></i></div></summary>${chs}<div class="addrow"><input type="text" id="add-${s.id}" placeholder="${t('addCh')}"><button class="btn ghost" data-add="${s.id}">${t('add')}</button></div></details>`}).join('');
-  view.innerHTML=`<section><div class="legend" style="margin-bottom:10px"><span>${t('read')} = ${t('p1s')}</span><span>${t('rev')} = ${t('p2')}</span><span>MCQ ✓</span></div>${html}</section>`;
+  const by={};S.weeks.forEach((w,i)=>w.forEach(x=>{if(x.s!=='all')(by[x.s]=by[x.s]||[]).push([x,i+1])}));
+  const html=Object.keys(SUBJ).filter(k=>by[k]).map(k=>{const list=by[k];const r=list.filter(([x])=>x.read).length;const v=list.filter(([x])=>x.rev).length;
+    const p=Math.round((r+v)/(list.length*2)*100);
+    return`<details class="subj" data-s="${k}" ${open.has(k)?'open':''}><summary><div class="sumtop"><b>${sn(k)}</b><span class="sub">${t('read')} ${num(r)}/${num(list.length)} · ${t('rev')} ${num(v)} · ${num(p)}%</span></div><div class="bar"><i style="width:${p}%"></i></div></summary>
+     ${list.map(([x,w])=>`<div class="chrow"><span class="grow"><span class="label">${esc(x.t)}</span><div class="sub">${t('week')} ${num(w)}${x.hard?' · '+t('hard'):''}</div></span>${['read','rev'].map(f=>`<button class="tog ${x[f]?'on':''}" data-c="${x.id}" data-f="${f}">${t(f)}</button>`).join('')}</div>`).join('')}</details>`}).join('');
+  view.innerHTML=`<section>${html}</section>`;
   view.querySelectorAll('details.subj').forEach(d=>d.ontoggle=()=>{d.open?open.add(d.dataset.s):open.delete(d.dataset.s)});
-  view.querySelectorAll('.tog').forEach(b=>b.onclick=()=>{const c=findCh(b.dataset.c);c[b.dataset.k]=!c[b.dataset.k];save();render()});
-  view.querySelectorAll('input.name').forEach(i=>i.onchange=()=>{const c=findCh(i.dataset.c);c.t=i.value.trim()||c.t;save()});
-  view.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{const s=S.subjects.find(x=>x.id===b.dataset.s);const c=findCh(b.dataset.del);
-    ask('"'+c.t+'"',()=>{s.chapters=s.chapters.filter(x=>x.id!==c.id);save();render()})});
-  view.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>{const inp=document.getElementById('add-'+b.dataset.add);const v=inp.value.trim();if(!v)return;
-    S.subjects.find(x=>x.id===b.dataset.add).chapters.push({id:id(),t:v,read:false,rev:false,mcq:false});save();render()});
+  view.querySelectorAll('.tog').forEach(b=>b.onclick=()=>{const x=findT(b.dataset.c);x[b.dataset.f]=!x[b.dataset.f];save();render()});
 }
 function vSettings(){
-  const subjs=S.subjects.map(s=>`<label><input type="checkbox" class="check" data-on="${s.id}" ${s.on?'checked':''}>${sn(s)}</label>`).join('');
-  const rr=S.routine.map(r=>`<div class="rrow"><input type="time" id="rt-${r.id}" data-rt="${r.id}" value="${esc(r.time)}"><input type="text" id="rx-${r.id}" data-rx="${r.id}" value="${esc(r.task)}"><button class="x" data-rdel="${r.id}" aria-label="delete">×</button></div>`).join('');
-  const seg=(key,opts)=>`<div class="seg">${opts.map(([v,l])=>`<button data-${key}="${v}" class="${S[key]===v?'on':''}">${l}</button>`).join('')}</div>`;
+  const rr=S.routine.map(r=>`<div class="rrow"><input type="time" id="rt-${r.id}" data-rt="${r.id}" value="${esc(r.time)}"><input type="text" id="rx-${r.id}" data-rx="${r.id}" value="${esc(r.task)}"><button class="x" data-rdel="${r.id}" aria-label="${t('del')}">×</button></div>`).join('');
+  const seg=(key,opts)=>`<div class="seg">${opts.map(([v,l])=>`<button data-set-${key}="${v}" class="${S[key]===v?'on':''}">${l}</button>`).join('')}</div>`;
   view.innerHTML=`
   <section><div class="sheet">
     <div class="field"><label>${t('lang')}</label>${seg('lang',[['bn','বাংলা'],['en','English']])}</div>
     <div class="field"><label>${t('theme')}</label>${seg('theme',[['auto',t('auto')],['light',t('light')],['dark',t('dark')]])}</div>
     <div class="field"><label for="sName">${t('name')}</label><input type="text" id="sName" value="${esc(S.name)}"></div>
     <div class="field"><label for="sStart">${t('start')}</label><input type="date" id="sStart" value="${S.start}"></div>
-    <div class="field"><label for="sDays">${t('days')}</label><input type="number" id="sDays" min="15" max="365" value="${S.days}"></div>
-    <div class="field"><label for="sGroup">${t('group')}</label><select id="sGroup">${['sci','com','hum'].map(g=>`<option value="${g}" ${S.group===g?'selected':''}>${t(g)}</option>`).join('')}</select></div>
+    <div class="field"><label for="sEnd">${t('end')}</label><input type="date" id="sEnd" value="${S.end}"></div>
   </div></section>
-  <section><h2>${t('subjects')}</h2><div class="sheet"><div class="subjpick">${subjs}</div></div></section>
   <section><h2>${t('editRoutine')}</h2><div class="sheet">${rr}<div class="addrow"><button class="btn ghost" id="rAdd">${t('addSlot')}</button></div></div></section>
   <section><h2>${t('backup')}</h2><div class="sheet"><div class="field"><label for="bk">${t('backupHint')}</label><textarea id="bk"></textarea><div class="btns"><button class="btn ghost" id="bCopy">${t('copy')}</button><button class="btn" id="bRestore">${t('restore')}</button></div></div></div></section>
   <section><button class="btn warn" id="reset">${t('reset')}</button></section>`;
-  document.getElementById('bk').value=JSON.stringify(S);
-  view.querySelectorAll('[data-lang]').forEach(b=>b.onclick=()=>{S.lang=b.dataset.lang;save();render()});
-  view.querySelectorAll('[data-theme]').forEach(b=>b.onclick=()=>{S.theme=b.dataset.theme;save();applyTheme();render()});
-  sName.onchange=()=>{S.name=sName.value.trim();save();render()};
-  sStart.onchange=()=>{if(sStart.value){S.start=sStart.value;save();render()}};
-  sDays.onchange=()=>{S.days=Math.min(365,Math.max(15,+sDays.value||90));save();render()};
-  sGroup.onchange=()=>{const g=sGroup.value;ask(t('groupWarn'),()=>{S.group=g;S.subjects=buildSubjects(g);S.mt={};save();render()});sGroup.value=S.group};
-  view.querySelectorAll('[data-on]').forEach(c=>c.onchange=()=>{S.subjects.find(s=>s.id===c.dataset.on).on=c.checked;save();render()});
-  view.querySelectorAll('[data-rt]').forEach(i=>i.onchange=()=>{const r=S.routine.find(x=>x.id===i.dataset.rt);r.time=i.value;S.routine.sort((a,b)=>a.time.localeCompare(b.time));save();render()});
+  const $=i=>document.getElementById(i);
+  $('bk').value=JSON.stringify(S);
+  view.querySelectorAll('[data-set-lang]').forEach(b=>b.onclick=()=>{S.lang=b.dataset.setLang;save();render()});
+  view.querySelectorAll('[data-set-theme]').forEach(b=>b.onclick=()=>{S.theme=b.dataset.setTheme;save();applyTheme();render()});
+  $('sName').onchange=()=>{S.name=$('sName').value.trim();save();render()};
+  $('sStart').onchange=()=>{if($('sStart').value){S.start=$('sStart').value;save();render()}};
+  $('sEnd').onchange=()=>{if($('sEnd').value){S.end=$('sEnd').value;save();render()}};
+  view.querySelectorAll('[data-rt]').forEach(i=>i.onchange=()=>{S.routine.find(x=>x.id===i.dataset.rt).time=i.value;S.routine.sort((a,b)=>a.time.localeCompare(b.time));save();render()});
   view.querySelectorAll('[data-rx]').forEach(i=>i.onchange=()=>{S.routine.find(x=>x.id===i.dataset.rx).task=i.value;save()});
   view.querySelectorAll('[data-rdel]').forEach(b=>b.onclick=()=>{S.routine=S.routine.filter(x=>x.id!==b.dataset.rdel);save();render()});
-  rAdd.onclick=()=>{S.routine.push({id:id(),time:'12:00',task:'…'});S.routine.sort((a,b)=>a.time.localeCompare(b.time));save();render()};
-  bCopy.onclick=()=>{const ta=document.getElementById('bk');const done=()=>toast(t('copied'));
-    try{navigator.clipboard.writeText(ta.value).then(done,()=>{ta.select();document.execCommand('copy');done()})}catch(e){ta.select();document.execCommand('copy');done()}};
-  bRestore.onclick=()=>{try{const v=JSON.parse(document.getElementById('bk').value);if(!v.subjects||!v.routine)throw 0;S=v;save();applyTheme();toast(t('restored'));render()}catch(e){toast(t('bad'))}};
-  reset.onclick=()=>ask(t('resetWarn'),()=>{const l=S.lang;S=fresh();S.lang=l;save();applyTheme();render()});
+  $('rAdd').onclick=()=>{S.routine.push({id:id(),time:'12:00',task:'…'});S.routine.sort((a,b)=>a.time.localeCompare(b.time));save();render()};
+  $('bCopy').onclick=()=>{const ta=$('bk');const done=()=>toast(t('copied'));const fb=()=>{ta.select();try{document.execCommand('copy')}catch(e){}done()};
+    try{navigator.clipboard.writeText(ta.value).then(done,fb)}catch(e){fb()}};
+  $('bRestore').onclick=()=>{try{const v=JSON.parse($('bk').value);if(!v.weeks||!v.routine)throw 0;S=v;save();applyTheme();toast(t('restored'));render()}catch(e){toast(t('bad'))}};
+  $('reset').onclick=()=>ask(t('resetWarn'),()=>{const l=S.lang;S=fresh();S.lang=l;save();applyTheme();render()});
 }
 
 function render(){
   document.documentElement.lang=S.lang;
-  const P=plan();const idx=diff(S.start,iso(new Date()));
-  header(P,idx);
+  const C=cal();header(C);
   document.getElementById('tabs').innerHTML=['today','plan','check','settings'].map(k=>`<button data-tab="${k}" class="${S.tab===k?'on':''}"><svg viewBox="0 0 24 24">${ICONS[k]}</svg>${t(k)}</button>`).join('');
   document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{S.tab=b.dataset.tab;save();render();window.scrollTo(0,0)});
-  ({today:vToday,plan:vPlan,check:vCheck,settings:vSettings}[S.tab]||vToday)(P,idx);
+  ({today:vToday,plan:vPlan,check:vCheck,settings:vSettings}[S.tab]||vToday)(C);
 }
 applyTheme();render();
-// refresh at midnight / when app comes back to the foreground
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)render()});
 })();
 </script>
