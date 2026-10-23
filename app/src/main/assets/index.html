@@ -125,6 +125,36 @@ details.subj.cur{border-color:var(--pen);box-shadow:inset 0 0 0 1px var(--pen)}
 .dayhead{display:flex;align-items:baseline;gap:10px;padding:10px 14px 8px;background:var(--pen-soft)}
 .dayhead b{font-family:var(--display);font-size:16px}
 .dayhead .sub{flex:1}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(58px,1fr));gap:8px}
+.tile{font:inherit;aspect-ratio:1;max-width:100%;border:1px solid var(--rule);background:var(--sheet);color:var(--ink);border-radius:12px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;padding:0}
+.tile small{font-size:10px;color:var(--muted);line-height:1}
+.tile b{font-family:var(--display);font-size:20px;line-height:1.1}
+.tile.done{background:var(--good);border-color:var(--good);color:#fff}.tile.done small{color:#fff;opacity:.85}
+.tile.late{background:var(--late-soft);border-color:var(--late);color:var(--late)}
+.tile.cur{border:2px solid var(--pen);box-shadow:0 0 0 3px var(--pen-soft)}
+.tile-legend{margin-bottom:4px}.tile-legend span{display:inline-flex;align-items:center;gap:5px}
+.lg{width:12px;height:12px;border-radius:4px;display:inline-block;border:1px solid var(--rule)}
+.lg.done{background:var(--good)}.lg.late{background:var(--late-soft);border-color:var(--late)}.lg.cur{border:2px solid var(--pen)}
+.btn.big{width:100%;padding:12px;font-size:16px;margin-bottom:10px}
+.btn:disabled{opacity:.5;cursor:default}
+.sheetwrap{position:fixed;inset:0;background:rgba(10,15,30,.5);z-index:15;display:flex;align-items:flex-end;justify-content:center}
+.sheetwrap .box{background:var(--sheet);width:100%;max-width:560px;border-radius:16px 16px 0 0;max-height:85%;overflow:auto;display:flex;flex-direction:column;gap:10px;padding-bottom:calc(14px + env(safe-area-inset-bottom,0px))}
+.sheetwrap .dayhead{border-radius:16px 16px 0 0}.sheetwrap .note,.sheetwrap .btns{margin:0 14px}
+.sheet-list .row:first-child{border-top:0}
+.timer{position:fixed;inset:0;z-index:25;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:calc(20px + env(safe-area-inset-top,0px)) max(20px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(20px,env(safe-area-inset-left,0px));color:#fff}
+.timer.is-study{background:var(--pen)}.timer.is-break{background:var(--good)}
+.tm-phase{font-size:13px;letter-spacing:.08em;font-weight:600;opacity:.85}
+.tm-topic{font-family:var(--display);font-size:22px;font-weight:700;max-width:30ch;text-wrap:balance;margin:0}
+.tm-sub{font-size:13px;opacity:.85}
+.tm-clock{position:relative;width:min(70vw,260px);aspect-ratio:1}
+.tm-clock svg{width:100%;height:100%}.tm-clock circle{fill:none;stroke-width:10}
+.tm-time{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--display);font-size:52px;font-weight:700;font-variant-numeric:tabular-nums}
+.timer .btns{justify-content:center}.timer .btn{background:rgba(255,255,255,.18);color:#fff}.timer .btn.solid{background:#fff;color:var(--ink)}
+.cele{position:fixed;inset:0;z-index:30;background:rgba(10,15,30,.55);display:grid;place-items:center;padding:16px}
+.cele canvas{position:fixed;inset:0;pointer-events:none}
+.cele .box{background:var(--sheet);border-radius:18px;padding:26px 22px;max-width:340px;width:100%;text-align:center;display:flex;flex-direction:column;gap:10px;position:relative}
+.cl-badge{width:72px;height:72px;margin:0 auto;border-radius:50%;background:var(--marker);display:grid;place-items:center;font-size:36px;color:var(--ink)}
+.cl-title{font-family:var(--display);font-size:26px;margin:0}
 @media (prefers-reduced-motion:no-preference){.bar i{transition:width .3s}}
 </style>
 
@@ -139,12 +169,20 @@ details.subj.cur{border-color:var(--pen);box-shadow:inset 0 0 0 1px var(--pen)}
 <nav class="tabs"><div class="wrap" id="tabs"></div></nav>
 <div class="modal" id="modal" hidden><div class="box"><div id="mText"></div><div class="btns"><button class="btn warn" id="mOk"></button><button class="btn ghost" id="mNo"></button></div></div></div>
 <div class="toast" id="toast" hidden></div>
+<div class="sheetwrap" id="sheet" hidden><div class="box"></div></div>
+<div class="timer" id="timer" hidden>
+  <div class="tm-phase"></div><p class="tm-topic"></p><div class="tm-sub"></div>
+  <div class="tm-clock"><svg viewBox="0 0 240 240" aria-hidden="true"><circle cx="120" cy="120" r="110" stroke="rgba(255,255,255,.25)"/><circle id="tmRing" cx="120" cy="120" r="110" stroke="#fff" stroke-linecap="round" transform="rotate(-90 120 120)" stroke-dasharray="691" stroke-dashoffset="0"/></svg><div class="tm-time"></div></div>
+  <div class="btns"><button class="btn solid" id="tmDone"></button><button class="btn solid" id="tmSkip"></button><button class="btn" id="tmPause"></button><button class="btn" id="tmClose" aria-label="Close">×</button></div>
+</div>
+<div class="cele" id="cele" hidden><canvas id="clCanvas"></canvas><div class="box"><div class="cl-badge" aria-hidden="true">★</div><p class="cl-title"></p><div class="cl-sub sub"></div><button class="btn" id="clOk"></button></div></div>
+
 
 <script>
 (function(){
 const KEY='hsc90-v2', OLD='hsc90-v1';
 const T={
- bn:{today:'আজ',plan:'পরিকল্পনা',byDay:'দিন অনুযায়ী',byWeek:'সপ্তাহ অনুযায়ী',noNew:'নতুন টপিক নেই: আগের পড়া রিভিশন ও MCQ',check:'চেকলিস্ট',settings:'সেটিংস',week:'সপ্তাহ',day:'দিন',left:'দিন বাকি',
+ bn:{today:'আজ',plan:'পরিকল্পনা',byDay:'দিন অনুযায়ী',startStudy:'পড়া শুরু করো',study:'পড়ার সময়',brk:'বিরতি',pause:'থামাও',resume:'চালাও',topicDone:'টপিক শেষ ✓',skip:'বিরতি বাদ',close:'বন্ধ',nothingLeft:'এই দিনের সব টপিক শেষ',dayDone:'সম্পূর্ণ!',keepGoing:'চালিয়ে যাও',overallP:'মোট অগ্রগতি',timerSet:'টাইমার',studyMin:'পড়ার সময় (মিনিট)',breakMin:'বিরতি (মিনিট)',remind:'রুটিনের সময়ে রিমাইন্ডার',remindNote:'রিমাইন্ডার শুধু ফোনের app-এ কাজ করে।',timeUp:'সময় শেষ',breakOver:'বিরতি শেষ, পরের পড়া শুরু',legDone:'শেষ',legLate:'বাকি',legToday:'আজ',next:'পরের টপিক',byWeek:'সপ্তাহ অনুযায়ী',noNew:'নতুন টপিক নেই: আগের পড়া রিভিশন ও MCQ',check:'চেকলিস্ট',settings:'সেটিংস',week:'সপ্তাহ',day:'দিন',left:'দিন বাকি',
   p1:'কঠিন অধ্যায় আগে',p2:'বাকি অধ্যায়',p3:'বোর্ড প্রশ্ন ও মডেল টেস্ট',p1s:'সপ্তাহ ১–৬',p2s:'সপ্তাহ ৭–১০',p3s:'সপ্তাহ ১১–১৪',
   routine:'আজকের রুটিন',focus:'আজকের ফোকাস',focusHint:'দিন অনুযায়ী পরিকল্পনায় আজকের জন্য রাখা টপিক।',
   thisWeek:'এই সপ্তাহের সব টপিক',carry:'আগের সপ্তাহের বাকি',allDone:'এই সপ্তাহের সব টপিক শেষ! আগের বাকি থাকলে সেগুলো ধরো।',
@@ -155,7 +193,7 @@ const T={
   resetWarn:'সব অগ্রগতি মুছে যাবে।',copied:'কপি হয়েছে',restored:'রিস্টোর হয়েছে',bad:'ব্যাকআপ লেখা ঠিক নেই',
   finished:'পরীক্ষার সময় এসে গেছে!',notStarted:'দিন পর শুরু',tip:'পরামর্শ',guide:'পরীক্ষার হলের গাইডলাইন',
   theme:'থিম',auto:'অটো',light:'লাইট',dark:'ডার্ক',topics:'টপিক',del:'মুছুন'},
- en:{today:'Today',plan:'Plan',byDay:'By day',byWeek:'By week',noNew:'No new topic: revise and practise MCQs',check:'Checklist',settings:'Settings',week:'Week',day:'Day',left:'days left',
+ en:{today:'Today',plan:'Plan',byDay:'By day',startStudy:'Start studying',study:'Study time',brk:'Break',pause:'Pause',resume:'Resume',topicDone:'Topic done ✓',skip:'Skip break',close:'Close',nothingLeft:'Every topic for this day is done',dayDone:'complete!',keepGoing:'Keep going',overallP:'Overall progress',timerSet:'Timer',studyMin:'Study length (minutes)',breakMin:'Break (minutes)',remind:'Reminders at routine times',remindNote:'Reminders work only in the phone app.',timeUp:'Time is up',breakOver:'Break over, next session',legDone:'Done',legLate:'Pending',legToday:'Today',next:'Next topic',byWeek:'By week',noNew:'No new topic: revise and practise MCQs',check:'Checklist',settings:'Settings',week:'Week',day:'Day',left:'days left',
   p1:'Hard chapters first',p2:'Remaining chapters',p3:'Board questions & model tests',p1s:'Weeks 1–6',p2s:'Weeks 7–10',p3s:'Weeks 11–14',
   routine:"Today's routine",focus:"Today's focus",focusHint:"Topics set for today in the day-by-day plan.",
   thisWeek:"All topics this week",carry:'Left over from earlier weeks',allDone:'Every topic this week is done! Clear any leftovers.',
@@ -201,12 +239,13 @@ function addDays(s,n){const d=parse(s);d.setDate(d.getDate()+n);return iso(d)}
 function diff(a,b){return Math.round((parse(b)-parse(a))/864e5)}
 function buildWeeks(){return PLAN.map(w=>w.map(([s,t,h,a])=>({id:id(),s,t,hard:!!h,added:!!a,read:false,rev:false})))}
 function fresh(){return{lang:'bn',theme:'auto',name:'',start:'2026-10-23',end:'2027-01-30',weeks:buildWeeks(),
-  routine:ROUTINE.map(([time,task])=>({id:id(),time,task})),log:{},tab:'today'}}
+  routine:ROUTINE.map(([time,task])=>({id:id(),time,task})),log:{},tab:'today',studyMin:45,breakMin:10,remind:true,cele:{}}}
 let S=null;
 try{S=JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){}
 if(!S||!S.weeks){const f=fresh();
   try{const o=JSON.parse(localStorage.getItem(OLD)||'null');if(o){['lang','theme','name','routine','log'].forEach(k=>{if(o[k]!=null)f[k]=o[k]})}}catch(e){}
   S=f;}
+S.studyMin=S.studyMin||45;S.breakMin=S.breakMin||10;if(S.remind==null)S.remind=true;S.cele=S.cele||{};
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 const t=k=>T[S.lang][k]||k;
 const sn=k=>(SUBJ[k]||[k,k])[S.lang==='bn'?0:1];
@@ -230,6 +269,11 @@ function spread(items,D,out){const n=items.length;items.forEach((x,i)=>{const a=
 function dayPlan(C,wi){const D=diff(C.ws[wi].a,C.ws[wi].b)+1;const out=Array.from({length:D},()=>[]);const w=S.weeks[wi];
   const order=(a,b)=>b.hard-a.hard;
   spread(w.filter(x=>!LANG.includes(x.s)).sort(order),D,out);spread(w.filter(x=>LANG.includes(x.s)),D,out);return out}
+function allDays(C){const out=[];S.weeks.forEach((w,wi)=>dayPlan(C,wi).forEach((items,d)=>{const date=addDays(C.ws[wi].a,d);out.push({dn:diff(S.start,date)+1,date,wi,items})}));return out}
+function dayDone(d){return d.items.length>0&&d.items.every(p=>p.x.read)}
+function checkCelebrate(tid){const C=cal();const hit=allDays(C).filter(d=>d.items.some(p=>p.x.id===tid)&&dayDone(d)&&!S.cele[d.dn]);
+  if(!hit.length)return;const past=hit.filter(d=>d.date<=C.today);const d=past.length?past[past.length-1]:hit[0];
+  hit.forEach(h=>S.cele[h.dn]=1);save();celebrate(d.dn)}
 const partLabel=p=>p.of>1?(S.lang==='bn'?`${num(p.of)} দিনের ${num(p.part)} নং দিন`:`day ${p.part} of ${p.of}`):'';
 const phaseOfWeek=i=>i<6?1:i<10?2:3;
 function allTopics(){return S.weeks.flat()}
@@ -251,7 +295,63 @@ const ICONS={today:'<circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/>',plan
 function topicRow(x,opt={}){
   const chips=(opt.part?`<span class="chip p1">${opt.part}</span>`:'')+(x.hard?`<span class="chip late">${t('hard')}</span>`:'')+(opt.carry?`<span class="chip p2">${t('week')} ${num(opt.carry)}</span>`:'');
   return`<label class="row ${x.read?'done':''}"><input type="checkbox" class="check" data-t="${x.id}" ${x.read?'checked':''}><span class="grow"><span class="label">${esc(x.t)}</span><div class="sub">${sn(x.s)}</div></span>${chips}</label>`}
-function bindTopicChecks(){view.querySelectorAll('input[data-t]').forEach(el=>el.onchange=()=>{findT(el.dataset.t).read=el.checked;save();render()})}
+function bindTopicChecks(root=view){root.querySelectorAll('input[data-t]').forEach(el=>el.onchange=()=>{findT(el.dataset.t).read=el.checked;save();
+  if(el.checked)checkCelebrate(el.dataset.t);render();if(openDay.dn&&!document.getElementById('sheet').hidden)openDay(openDay.dn)})}
+/* ---------- day sheet ---------- */
+function openDay(dn){openDay.dn=dn;const C=cal();const d=allDays(C).find(x=>x.dn===dn);if(!d)return;const sh=document.getElementById('sheet');
+  const pend=d.items.filter(p=>!p.x.read).map(p=>p.x.id);
+  sh.querySelector('.box').innerHTML=`<div class="dayhead"><b>${t('day')} ${num(dn)}</b><span class="sub">${fmt(d.date)} · ${t('week')} ${num(d.wi+1)}${d.date===C.today?' · '+t('today'):''}</span><button class="x" id="shClose" aria-label="${t('close')}">×</button></div>
+   <div class="sheet-list">${d.items.length?d.items.map(p=>topicRow(p.x,{part:partLabel(p)})).join(''):`<div class="empty">${t('noNew')}</div>`}</div>
+   ${TIPS[d.wi+1]?`<div class="note">${TIPS[d.wi+1]}</div>`:''}
+   <div class="btns"><button class="btn big" id="shStart" ${pend.length?'':'disabled'}>${pend.length?t('startStudy'):t('nothingLeft')}</button></div>`;
+  sh.hidden=false;bindTopicChecks(sh);
+  document.getElementById('shClose').onclick=()=>{sh.hidden=true;openDay.dn=0};
+  sh.onclick=e=>{if(e.target===sh){sh.hidden=true;openDay.dn=0}};
+  document.getElementById('shStart').onclick=()=>{sh.hidden=true;openDay.dn=0;startTimer(pend)}}
+/* ---------- study timer ---------- */
+const TM={q:[],i:0,phase:'study',endAt:0,remain:0,paused:false,h:0,lock:null};
+const A=window.Android||null;
+function beep(){try{const c=new (window.AudioContext||window.webkitAudioContext)();[0,0.35].forEach(o=>{const g=c.createGain(),os=c.createOscillator();os.frequency.value=880;os.connect(g);g.connect(c.destination);g.gain.setValueAtTime(.25,c.currentTime+o);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+o+.3);os.start(c.currentTime+o);os.stop(c.currentTime+o+.3)})}catch(e){}
+  try{navigator.vibrate&&navigator.vibrate([300,150,300])}catch(e){}}
+function armNative(){try{if(A&&A.timerAlarm){A.timerCancel();if(!TM.paused)A.timerAlarm(TM.endAt,TM.phase==='study'?t('timeUp'):t('breakOver'),TM.phase==='study'?t('brk'):t('study'))}}catch(e){}}
+function startPhase(ph){TM.phase=ph;TM.paused=false;TM.endAt=Date.now()+(ph==='study'?S.studyMin:S.breakMin)*60000;armNative();drawTimer()}
+async function startTimer(ids){if(!ids.length){toast(t('nothingLeft'));return}TM.q=ids;TM.i=0;document.getElementById('timer').hidden=false;
+  try{TM.lock=await navigator.wakeLock.request('screen')}catch(e){}try{A&&A.keepAwake&&A.keepAwake(true)}catch(e){}
+  startPhase('study');clearInterval(TM.h);TM.h=setInterval(tick,500)}
+function stopTimer(){clearInterval(TM.h);document.getElementById('timer').hidden=true;try{TM.lock&&TM.lock.release()}catch(e){}TM.lock=null;
+  try{A&&A.keepAwake&&A.keepAwake(false);A&&A.timerCancel&&A.timerCancel()}catch(e){}render()}
+function nextTopic(){while(TM.i<TM.q.length&&findT(TM.q[TM.i])&&findT(TM.q[TM.i]).read)TM.i++;return TM.i<TM.q.length}
+function tick(){if(TM.paused)return;const left=TM.endAt-Date.now();if(left<=0){beep();
+    if(TM.phase==='study'){startPhase('brk')}else{if(!nextTopic()){stopTimer();return}startPhase('study')}return}drawTimer()}
+function drawTimer(){const el=document.getElementById('timer');const x=findT(TM.q[TM.i]);if(!x){stopTimer();return}
+  const total=(TM.phase==='study'?S.studyMin:S.breakMin)*60000;const left=Math.max(0,TM.paused?TM.remain:TM.endAt-Date.now());
+  const m=Math.floor(left/60000),sec=Math.floor(left/1000)%60;
+  el.className='timer '+(TM.phase==='study'?'is-study':'is-break');
+  el.querySelector('.tm-phase').textContent=TM.phase==='study'?t('study'):t('brk');
+  el.querySelector('.tm-topic').textContent=x.t;el.querySelector('.tm-sub').textContent=sn(x.s)+' · '+num(TM.i+1)+'/'+num(TM.q.length);
+  el.querySelector('.tm-time').textContent=num(z(m))+':'+num(z(sec));
+  el.querySelector('#tmRing').setAttribute('stroke-dashoffset',(691*(left/total)).toFixed(1));
+  const pb=el.querySelector('#tmPause');pb.textContent=TM.paused?t('resume'):t('pause');
+  el.querySelector('#tmDone').hidden=TM.phase!=='study';el.querySelector('#tmSkip').hidden=TM.phase!=='brk'}
+function bindTimer(){const el=document.getElementById('timer');
+  el.querySelector('#tmPause').onclick=()=>{if(TM.paused){TM.paused=false;TM.endAt=Date.now()+TM.remain}else{TM.paused=true;TM.remain=TM.endAt-Date.now()}armNative();drawTimer()};
+  el.querySelector('#tmDone').onclick=()=>{const x=findT(TM.q[TM.i]);x.read=true;save();checkCelebrate(x.id);TM.i++;if(!nextTopic()){stopTimer();return}startPhase('brk')};
+  el.querySelector('#tmSkip').onclick=()=>{if(!nextTopic()){stopTimer();return}startPhase('study')};
+  el.querySelector('#tmClose').onclick=stopTimer}
+/* ---------- celebration ---------- */
+function celebrate(dn){const el=document.getElementById('cele');
+  el.querySelector('.cl-title').textContent=t('day')+' '+num(dn)+' '+t('dayDone');
+  el.querySelector('.cl-sub').textContent=t('overallP')+' '+num(Math.round(overall()*100))+'% · '+t('streak')+' '+num(streak());
+  el.querySelector('#clOk').textContent=t('keepGoing');el.hidden=false;beep();
+  el.querySelector('#clOk').onclick=()=>{el.hidden=true};confetti()}
+function confetti(){if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;const cv=document.getElementById('clCanvas');const ctx=cv.getContext('2d');
+  const W=cv.width=innerWidth,H=cv.height=innerHeight;const cs=getComputedStyle(document.documentElement);
+  const cols=['--pen','--marker','--good','--late'].map(v=>cs.getPropertyValue(v).trim());
+  const P=Array.from({length:120},()=>({x:Math.random()*W,y:-20-Math.random()*H*.5,vx:(Math.random()-.5)*3,vy:2+Math.random()*3,r:4+Math.random()*4,a:Math.random()*6,c:cols[Math.floor(Math.random()*4)]}));
+  const t0=performance.now();(function f(n){ctx.clearRect(0,0,W,H);P.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.a+=.1;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.a);ctx.fillStyle=p.c;ctx.fillRect(-p.r,-p.r/2,p.r*2,p.r);ctx.restore()});
+    if(n-t0<2800)requestAnimationFrame(f);else ctx.clearRect(0,0,W,H)})(t0)}
+/* ---------- reminders (phone app only) ---------- */
+function syncReminders(){try{if(A&&A.setReminders)A.setReminders(JSON.stringify(S.remind?S.routine.map(r=>({time:r.time,text:r.task})):[]))}catch(e){}}
 
 function header(C){
   const hd=document.getElementById('hDay'),of=document.getElementById('hOf'),ti=document.getElementById('hTitle');
@@ -280,7 +380,7 @@ function vToday(C){
   const wDone=week.filter(x=>x.read).length;
   view.innerHTML=`
    <section><div class="phases">${phaseCards}</div></section>
-   ${C.wi>=0&&C.wi<S.weeks.length?`<section><h2>${t('focus')}</h2><p class="hint">${t('focusHint')}</p><div class="sheet">${focus.length?focus.map(p=>topicRow(p.x,{part:partLabel(p)})).join(''):`<div class="empty">${t('noNew')}</div>`}</div></section>`:''}
+   ${C.wi>=0&&C.wi<S.weeks.length?`<section><h2>${t('focus')}</h2><p class="hint">${t('focusHint')}</p>${focus.some(p=>!p.x.read)?`<button class="btn big" id="startToday">▶ ${t('startStudy')}</button>`:''}<div class="sheet">${focus.length?focus.map(p=>topicRow(p.x,{part:partLabel(p)})).join(''):`<div class="empty">${t('noNew')}</div>`}</div></section>`:''}
    ${TIPS[wi+1]?`<section class="note"><b>${t('tip')}:</b> ${TIPS[wi+1]}</section>`:''}
    ${carry.length?`<section><h2>${t('carry')} <span class="tag">${num(carry.length)}</span></h2><div class="sheet">${carry.slice(0,10).map(([x,w])=>topicRow(x,{carry:w})).join('')}</div></section>`:''}
    <section><h2>${t('routine')} <span class="tag">${num(rDone)}/${num(S.routine.length)}</span></h2><div class="sheet">${routine}</div></section>
@@ -289,22 +389,22 @@ function vToday(C){
   view.querySelectorAll('input[data-r]').forEach(el=>el.onchange=()=>{const l=S.log[C.today]||(S.log[C.today]=[]);const k=el.dataset.r;
     if(el.checked){if(!l.includes(k))l.push(k)}else S.log[C.today]=l.filter(x=>x!==k);save();render()});
   bindTopicChecks();
+  const st=document.getElementById('startToday');if(st)st.onclick=()=>startTimer(focus.filter(p=>!p.x.read).map(p=>p.x.id));
 }
 function vDays(C){
-  let html='',lastPh=0;
-  S.weeks.forEach((w,wi)=>{const ph=phaseOfWeek(wi);
-    if(ph!==lastPh){html+=`<h2 class="phase-h"><span class="chip p${ph}">${t('p'+ph)}</span><span class="sub">${t('p'+ph+'s')}</span></h2>`;lastPh=ph}
-    dayPlan(C,wi).forEach((items,d)=>{const date=addDays(C.ws[wi].a,d);const dn=diff(S.start,date)+1;const isT=date===C.today;
-      const done=items.length&&items.every(p=>p.x.read);
-      html+=`<div class="sheet day ${isT?'cur':''}" ${isT?'id="todayRow"':''}><div class="dayhead"><b>${t('day')} ${num(dn)}</b><span class="sub">${fmt(date)} · ${t('week')} ${num(wi+1)}${isT?' · '+t('today'):''}</span>${done?'<span class="chip p3">✓</span>':''}</div>
-        ${items.length?items.map(p=>topicRow(p.x,{part:partLabel(p)})).join(''):`<div class="empty">${t('noNew')}</div>`}</div>`})});
+  const days=allDays(C);let html=`<div class="legend tile-legend"><span><i class="lg done"></i>${t('legDone')}</span><span><i class="lg late"></i>${t('legLate')}</span><span><i class="lg cur"></i>${t('legToday')}</span></div>`,lastPh=0,open=false;
+  days.forEach(d=>{const ph=phaseOfWeek(d.wi);
+    if(ph!==lastPh){if(open)html+='</div>';html+=`<h2 class="phase-h"><span class="chip p${ph}">${t('p'+ph)}</span><span class="sub">${t('p'+ph+'s')}</span></h2><div class="tiles">`;open=true;lastPh=ph}
+    const done=dayDone(d),isT=d.date===C.today,late=!done&&d.date<C.today;
+    html+=`<button class="tile ${done?'done':''} ${isT?'cur':''} ${late?'late':''}" data-dn="${d.dn}" ${isT?'id="todayRow"':''} aria-label="${t('day')} ${d.dn}"><small>${t('day')}</small><b>${done?'✓':num(d.dn)}</b></button>`});
+  if(open)html+='</div>';
   return html;
 }
 function vPlan(C){
   const mode=S.planMode||'day';
   const seg=`<div class="seg planseg"><button data-pm="day" class="${mode==='day'?'on':''}">${t('byDay')}</button><button data-pm="week" class="${mode==='week'?'on':''}">${t('byWeek')}</button></div>`;
   const bindSeg=()=>view.querySelectorAll('[data-pm]').forEach(b=>b.onclick=()=>{S.planMode=b.dataset.pm;save();render()});
-  if(mode==='day'){view.innerHTML=`<section>${seg}${vDays(C)}</section>`;bindSeg();bindTopicChecks();
+  if(mode==='day'){view.innerHTML=`<section>${seg}${vDays(C)}</section>`;bindSeg();view.querySelectorAll('[data-dn]').forEach(b=>b.onclick=()=>openDay(+b.dataset.dn));
     const tr=document.getElementById('todayRow');if(tr&&!vPlan.scrolled){vPlan.scrolled=1;tr.scrollIntoView({block:'start'});window.scrollBy(0,-90)}return}
   const open=vPlan.open||(vPlan.open=new Set([Math.max(0,Math.min(C.wi,S.weeks.length-1))]));
   const opts=Object.keys(SUBJ).map(k=>`<option value="${k}">${sn(k)}</option>`).join('');
@@ -346,6 +446,11 @@ function vSettings(){
     <div class="field"><label for="sStart">${t('start')}</label><input type="date" id="sStart" value="${S.start}"></div>
     <div class="field"><label for="sEnd">${t('end')}</label><input type="date" id="sEnd" value="${S.end}"></div>
   </div></section>
+  <section><h2>${t('timerSet')}</h2><div class="sheet">
+    <div class="field"><label for="sStudy">${t('studyMin')}</label><input type="number" id="sStudy" min="5" max="180" value="${S.studyMin}"></div>
+    <div class="field"><label for="sBreak">${t('breakMin')}</label><input type="number" id="sBreak" min="1" max="60" value="${S.breakMin}"></div>
+    <label class="row"><input type="checkbox" class="check" id="sRemind" ${S.remind?'checked':''}><span class="grow">${t('remind')}${A?'':`<div class="sub">${t('remindNote')}</div>`}</span></label>
+  </div></section>
   <section><h2>${t('editRoutine')}</h2><div class="sheet">${rr}<div class="addrow"><button class="btn ghost" id="rAdd">${t('addSlot')}</button></div></div></section>
   <section><h2>${t('backup')}</h2><div class="sheet"><div class="field"><label for="bk">${t('backupHint')}</label><textarea id="bk"></textarea><div class="btns"><button class="btn ghost" id="bCopy">${t('copy')}</button><button class="btn" id="bRestore">${t('restore')}</button></div></div></div></section>
   <section><button class="btn warn" id="reset">${t('reset')}</button></section>`;
@@ -353,12 +458,15 @@ function vSettings(){
   $('bk').value=JSON.stringify(S);
   view.querySelectorAll('[data-set-lang]').forEach(b=>b.onclick=()=>{S.lang=b.dataset.setLang;save();render()});
   view.querySelectorAll('[data-set-theme]').forEach(b=>b.onclick=()=>{S.theme=b.dataset.setTheme;save();applyTheme();render()});
+  $('sStudy').onchange=()=>{S.studyMin=Math.min(180,Math.max(5,+$('sStudy').value||45));save()};
+  $('sBreak').onchange=()=>{S.breakMin=Math.min(60,Math.max(1,+$('sBreak').value||10));save()};
+  $('sRemind').onchange=()=>{S.remind=$('sRemind').checked;save();syncReminders()};
   $('sName').onchange=()=>{S.name=$('sName').value.trim();save();render()};
   $('sStart').onchange=()=>{if($('sStart').value){S.start=$('sStart').value;save();render()}};
   $('sEnd').onchange=()=>{if($('sEnd').value){S.end=$('sEnd').value;save();render()}};
-  view.querySelectorAll('[data-rt]').forEach(i=>i.onchange=()=>{S.routine.find(x=>x.id===i.dataset.rt).time=i.value;S.routine.sort((a,b)=>a.time.localeCompare(b.time));save();render()});
-  view.querySelectorAll('[data-rx]').forEach(i=>i.onchange=()=>{S.routine.find(x=>x.id===i.dataset.rx).task=i.value;save()});
-  view.querySelectorAll('[data-rdel]').forEach(b=>b.onclick=()=>{S.routine=S.routine.filter(x=>x.id!==b.dataset.rdel);save();render()});
+  view.querySelectorAll('[data-rt]').forEach(i=>i.onchange=()=>{S.routine.find(x=>x.id===i.dataset.rt).time=i.value;S.routine.sort((a,b)=>a.time.localeCompare(b.time));save();syncReminders();render()});
+  view.querySelectorAll('[data-rx]').forEach(i=>i.onchange=()=>{S.routine.find(x=>x.id===i.dataset.rx).task=i.value;save();syncReminders()});
+  view.querySelectorAll('[data-rdel]').forEach(b=>b.onclick=()=>{S.routine=S.routine.filter(x=>x.id!==b.dataset.rdel);save();syncReminders();render()});
   $('rAdd').onclick=()=>{S.routine.push({id:id(),time:'12:00',task:'…'});S.routine.sort((a,b)=>a.time.localeCompare(b.time));save();render()};
   $('bCopy').onclick=()=>{const ta=$('bk');const done=()=>toast(t('copied'));const fb=()=>{ta.select();try{document.execCommand('copy')}catch(e){}done()};
     try{navigator.clipboard.writeText(ta.value).then(done,fb)}catch(e){fb()}};
@@ -373,8 +481,8 @@ function render(){
   document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{S.tab=b.dataset.tab;vPlan.scrolled=0;save();render();window.scrollTo(0,0)});
   ({today:vToday,plan:vPlan,check:vCheck,settings:vSettings}[S.tab]||vToday)(C);
 }
-applyTheme();render();
-document.addEventListener('visibilitychange',()=>{if(!document.hidden)render()});
+applyTheme();bindTimer();render();syncReminders();
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){render();if(!document.getElementById('timer').hidden)tick()}});
 })();
 </script>
 

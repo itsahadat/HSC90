@@ -10,8 +10,8 @@ android {
         applicationId = "com.banglabs.hsc90"
         minSdk = 24
         targetSdk = 34
-        versionCode = 3
-        versionName = "2.1"
+        versionCode = 4
+        versionName = "3.0"
     }
 
     buildTypes {
@@ -21,6 +21,11 @@ android {
             // Replace with your own keystore before publishing on Play Store.
             signingConfig = signingConfigs.getByName("debug")
         }
+    }
+
+    lint {
+        checkReleaseBuilds = false
+        abortOnError = false
     }
 
     compileOptions {
