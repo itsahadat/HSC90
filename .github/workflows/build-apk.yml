@@ -1,5 +1,7 @@
 name: Build APK
 on: [push, workflow_dispatch]
+permissions:
+  contents: write   # needed to publish the APK on the Releases page
 jobs:
   build:
     runs-on: ubuntu-24.04   # comes with the Android SDK preinstalled
@@ -10,8 +12,18 @@ jobs:
       - name: Accept SDK licenses
         run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
       - name: Build APK
-        run: chmod +x gradlew && ./gradlew assembleRelease --no-daemon
+        run: |
+          chmod +x gradlew && ./gradlew assembleRelease --no-daemon
+          cp app/build/outputs/apk/release/app-release.apk HSC90.apk
       - uses: actions/upload-artifact@v4
         with:
           name: HSC90-apk
-          path: app/build/outputs/apk/release/*.apk
+          path: HSC90.apk
+      - name: Publish to Releases (permanent link)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.${{ github.run_number }}
+          name: HSC90 v1.0.${{ github.run_number }}
+          body: "ফোনে HSC90.apk নামিয়ে install করুন।"
+          files: HSC90.apk
+          make_latest: true
