@@ -10,8 +10,8 @@ android {
         applicationId = "com.banglabs.hsc90"
         minSdk = 24
         targetSdk = 34
-        versionCode = 4
-        versionName = "3.0"
+        versionCode = 5
+        versionName = "3.1"
     }
 
     buildTypes {

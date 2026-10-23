@@ -330,9 +330,9 @@ function drawTimer(){const el=document.getElementById('timer');const x=findT(TM.
   el.querySelector('.tm-phase').textContent=TM.phase==='study'?t('study'):t('brk');
   el.querySelector('.tm-topic').textContent=x.t;el.querySelector('.tm-sub').textContent=sn(x.s)+' · '+num(TM.i+1)+'/'+num(TM.q.length);
   el.querySelector('.tm-time').textContent=num(z(m))+':'+num(z(sec));
-  el.querySelector('#tmRing').setAttribute('stroke-dashoffset',(691*(left/total)).toFixed(1));
+  el.querySelector('#tmRing').setAttribute('stroke-dashoffset',(691*(1-left/total)).toFixed(1));
   const pb=el.querySelector('#tmPause');pb.textContent=TM.paused?t('resume'):t('pause');
-  el.querySelector('#tmDone').hidden=TM.phase!=='study';el.querySelector('#tmSkip').hidden=TM.phase!=='brk'}
+  el.querySelector('#tmDone').textContent=t('topicDone');el.querySelector('#tmSkip').textContent=t('skip');el.querySelector('#tmClose').textContent=t('close');el.querySelector('#tmDone').hidden=TM.phase!=='study';el.querySelector('#tmSkip').hidden=TM.phase!=='brk'}
 function bindTimer(){const el=document.getElementById('timer');
   el.querySelector('#tmPause').onclick=()=>{if(TM.paused){TM.paused=false;TM.endAt=Date.now()+TM.remain}else{TM.paused=true;TM.remain=TM.endAt-Date.now()}armNative();drawTimer()};
   el.querySelector('#tmDone').onclick=()=>{const x=findT(TM.q[TM.i]);x.read=true;save();checkCelebrate(x.id);TM.i++;if(!nextTopic()){stopTimer();return}startPhase('brk')};
